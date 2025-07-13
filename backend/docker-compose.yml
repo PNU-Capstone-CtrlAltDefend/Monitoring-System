@@ -1,0 +1,28 @@
+version: "3.4"
+services:
+    db:
+        image: postgres:15.2-alpine
+        environment:
+            POSTGRES_USER: sentra_user
+            POSTGRES_PASSWORD: huni5504
+            POSTGRES_DB: Sentra_DB
+            POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+        ports:
+            - 5433:5433
+        volumes:
+            - ./db/data:/var/lib/postgresql/data
+        command: 
+            postgres -c port=5433
+
+    pgadmin:
+        image: dpage/pgadmin4
+        user: root
+        environment:
+            PGADMIN_DEFAULT_EMAIL: "admin@sentra.co.kr"
+            PGADMIN_DEFAULT_PASSWORD: "huni5504"
+        ports:
+            - 3030:80
+        volumes:
+            - ./pgadmin/data:/var/lib/pgadmin
+        depends_on:
+            - db
