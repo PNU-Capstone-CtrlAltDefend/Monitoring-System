@@ -34,6 +34,10 @@ async def sign_up(form_data: security_manager_schemas.UserCreate , Authorize: An
     existing = security_manager_crud.get_security_manager_by_id(db, form_data.manager_id)
     if existing:
         raise HTTPException(status_code=400, detail='이미 존재하는 ID입니다.')
+    
+    existing_email = security_manager_crud.get_security_manager_by_email(db, form_data.email)
+    if existing_email:
+        raise HTTPException(status_code=400, detail='이미 존재하는 이메일입니다.')
 
     new_user = security_manager_crud.create_security_manager(db, form_data)
     
@@ -57,7 +61,12 @@ async def sign_in(
         raise HTTPException(status_code=401, detail='잘못된 ID 또는 비밀번호입니다.')
 
     # JWT 토큰 생성
-    access_token = Authorize.create_access_token(subject=user.manager_id)
+    access_token = Authorize.create_access_token(
+    subject=user.manager_id,
+    user_claims={
+        "organization_id": str(user.organization_id),
+    }
+    )
     refresh_token = Authorize.create_refresh_token(subject=user.manager_id)
 
     return {
@@ -76,3 +85,26 @@ def refresh_token(Authorize: AuthJWT = Depends()):
     current_user = Authorize.get_jwt_subject()
     new_access_token = Authorize.create_access_token(subject=current_user)
     return {"access_token": new_access_token, "token_type": "bearer"}
+
+@router.get('/me')
+async def get_current_user(Authorize: Annotated[AuthJWT, Depends()], db: Annotated[Session, Depends(get_db)]):
+    """
+    현재 로그인된 사용자 정보 반환
+    """
+    try:
+        Authorize.jwt_required()
+    except AuthJWTException:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
+    current_user_id = Authorize.get_jwt_subject()
+    user = security_manager_crud.get_security_manager_by_id(db, current_user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail='사용자를 찾을 수 없습니다.')
+
+    return {
+        "manager_id": user.manager_id,
+        "name": user.name,
+        "email": user.email,
+        "organization_id": str(user.organization_id)
+    }

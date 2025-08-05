@@ -4,8 +4,9 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layouts/mainlayout/MainLayout.jsx';
 import Home from '../pages/home.jsx';
 import SignUp from '../pages/signup.jsx';
-import SignIn from '../pages/signin.jsx';
+import SignIn from '../pages/signin/signin.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
+import Dashboard from '../pages/dashboard.jsx';
 
 const router = createBrowserRouter([
   {
@@ -26,9 +27,14 @@ const router = createBrowserRouter([
       },
 
       {
+        path: ':oid',
         element: <ProtectedRoute />,
         children: [
-
+          {
+            path: 'dashboard',
+            element: <Dashboard />
+          }
+          
         ]
       }
     ]

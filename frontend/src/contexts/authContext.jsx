@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { fetchRefresh } from '../services/AuthService';
+import {fetchMe} from '../api/auth.jsx'
 import SessionExpiredAlert from '../components/Alert/SessionExpireAlert.jsx';
 
 export const AuthContext = createContext();
@@ -9,13 +10,14 @@ export const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({
         isAuthenticated: false,
         isLoading: true,
+        user: null,
     });
     const [showSessionExpired, setShowSessionExpired] = useState(false);
 
     const logoutAndRedirect = () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        setAuthState({ isAuthenticated: false, isLoading: false });
+        setAuthState({ isAuthenticated: false, isLoading: false, user: null });
         setShowSessionExpired(true);
     };
 
@@ -49,7 +51,8 @@ export const AuthProvider = ({ children }) => {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('access_token', data.access_token);
-                setAuthState({ isAuthenticated: true, isLoading: false });
+                const me = await fetchMe();
+                setAuthState({ isAuthenticated: true, isLoading: false, user: me });
             } else {
                 const error = await response.json();
                 handleSessionError(error);

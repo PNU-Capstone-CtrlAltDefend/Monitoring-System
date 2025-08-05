@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     List,
     ListItemButton,
@@ -12,6 +12,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 const VerticalNavbar = ({ isExpanded }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { oid } = useParams();
 
     const [statisticsOpen, setStatisticsOpen] = useState(false);
 
@@ -20,12 +21,12 @@ const VerticalNavbar = ({ isExpanded }) => {
     }, [isExpanded]);
 
     const handleListItemClick = (path) => {
-        navigate(`/${path}`);
+        navigate(`/${oid}/${path}`);
     };
 
     const isActive = useMemo(
-        () => (path) => location.pathname === `/${path}`,
-        [location.pathname]
+        () => (path) => location.pathname === `/${oid}/${path}`,
+        [location.pathname, oid]
     );
 
     const listItemStyle = {

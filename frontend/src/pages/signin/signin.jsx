@@ -1,6 +1,6 @@
 'use client';
 import { useState, useContext } from 'react';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -10,7 +10,8 @@ import {
   Box,
 } from '@mui/material';
 
-import {signIn} from '../api/auth'; 
+import { signIn, fetchMe } from '../../api/auth';
+
 
 const backendUrl = process.env.REACT_APP_API_URL;
 
@@ -35,11 +36,14 @@ const SignIn = () => {
       console.log('로그인 요청:', backendUrl);
       const result = await signIn(formData);
 
-      localStorage.setItem('access_token', result.access_token); 
+      localStorage.setItem('access_token', result.access_token);
       localStorage.setItem('refresh_token', result.refresh_token);
-      setAuthState({ isAuthenticated: true, isLoading: false });
+      const me = await fetchMe();
+      setAuthState({ isAuthenticated: true, isLoading: false, user: me });
       alert('로그인 성공!');
-      navigate('/'); 
+      const orgId = me.organization_id;
+
+      navigate(`/${orgId}/dashboard`);
 
     } catch (error) {
       console.error('로그인 중 오류 발생:', error);

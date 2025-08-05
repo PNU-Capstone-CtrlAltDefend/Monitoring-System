@@ -4,7 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from model.init_database import init_database
 from model.database import engine, SessionLocal
 from core.config import settings
+
+# API 모듈 
 from api.v1 import auth 
+from api.v1 import organizations
 try:
     init_database(engine, SessionLocal())
 except Exception as e:
@@ -28,3 +31,4 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix=settings.API_STR, tags=['auth'])
+app.include_router(organizations.router, prefix=settings.API_STR, tags=['Organizations'])
