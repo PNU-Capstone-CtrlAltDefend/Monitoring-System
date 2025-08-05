@@ -36,6 +36,16 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str = 'kwanghun lee'
     ADMIN_EMAIL: str = 'gbhuni@gmail.com'
     ADMIN_PASSWORD: str = 'huni5504'
-    ADMIN_COMPANY_NAME: str = 'Pusan National University'
+    ADMIN_COMPANY_NAME: str = 'SkyForge Systems'
+
+    #기본 조직 정보
+    ADMIN_COMPANY_NAME: str = 'SkyForge Systems'
+    ADMIN_AUTH_CODE: str = '1234567890123456'  # 16 characters long
+    ADMIN_ORGANIZATION_DESCRIPTION: str = '하이브리드 클라우드 환경에 맞춘 DevOps 자동화 및 보안 정책 관리 툴을 제공하는 기업. 대규모 인프라 운영 기업을 주요 고객으로 한다.'
+
+    #추가 조직 정보
+    ADDITIONAL_ORGANIZATIONS_NAME: str = 'Samsung Electronics'
+    ADDITIONAL_ORGANIZATIONS_AUTH_CODE: str = 'samsung123456789'  # 16 characters long
+    ADDITIONAL_ORGANIZATIONS_DESCRIPTION: str = '삼성전자는 글로벌 전자제품 및 반도체 기업으로, 혁신적인 기술과 제품을 통해 세계 시장에서 선도적인 위치를 차지하고 있습니다.'
 
 settings = Settings()

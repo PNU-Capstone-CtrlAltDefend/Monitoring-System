@@ -20,3 +20,11 @@ def get_password_hash(password: str) -> str:
 # 🔒 해시 검증 (로그인 시 사용)
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
+# 인증 코드 해시 생성 (alias)
+def get_auth_code_hash(code: str) -> str:
+    return get_password_hash(code)
+
+# 인증 코드 검증
+def verify_auth_code(input_code: str, hashed_code: str) -> bool:
+    return verify_password(input_code, hashed_code)
