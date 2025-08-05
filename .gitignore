@@ -38,8 +38,6 @@ __pycache__/
 
 # Environment
 .env
-.env.*
-
 # Node
 node_modules/
 frontend/node_modules/

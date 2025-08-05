@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -9,9 +10,12 @@ import {
   Box,
 } from '@mui/material';
 
+import {signIn} from '../api/auth'; 
+
 const backendUrl = process.env.REACT_APP_API_URL;
 
 const SignIn = () => {
+  const { setAuthState } = useContext(AuthContext) ?? {};
   const [formData, setFormData] = useState({
     manager_id: '',
     password: '',
@@ -29,21 +33,13 @@ const SignIn = () => {
 
     try {
       console.log('로그인 요청:', backendUrl);
-      const response = await fetch(`${backendUrl}/auth/signin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      const result = await signIn(formData);
 
-      if (!response.ok) throw new Error(`서버 응답 실패: ${response.status}`);
-
-      const result = await response.json();
-      console.log('서버 응답:', result);
-
-      // 예: 토큰 저장 및 리디렉션
-      localStorage.setItem('token', result.token);
+      localStorage.setItem('access_token', result.access_token); 
+      localStorage.setItem('refresh_token', result.refresh_token);
+      setAuthState({ isAuthenticated: true, isLoading: false });
       alert('로그인 성공!');
-      navigate('/'); // 로그인 후 홈으로 이동
+      navigate('/'); 
 
     } catch (error) {
       console.error('로그인 중 오류 발생:', error);
