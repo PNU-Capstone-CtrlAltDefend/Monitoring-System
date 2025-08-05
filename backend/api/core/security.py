@@ -1,4 +1,14 @@
 from passlib.context import CryptContext
+from pydantic import BaseModel
+from fastapi_jwt_auth import AuthJWT
+import os
+from dotenv import load_dotenv
+load_dotenv()
+class Settings(BaseModel):
+    authjwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "fdasssssssssssssssssssssss1233213213123123123jn12qewjnsdn")
+@AuthJWT.load_config
+def get_config():
+    return Settings()
 
 # 비밀번호 해시 생성을 위한 설정
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
