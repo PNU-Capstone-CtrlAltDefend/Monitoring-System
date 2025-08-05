@@ -65,3 +65,14 @@ async def sign_in(
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+
+@router.post("/refresh")
+def refresh_token(Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_refresh_token_required()
+    except AuthJWTException:
+        raise HTTPException(status_code=401, detail="Login session expired")
+
+    current_user = Authorize.get_jwt_subject()
+    new_access_token = Authorize.create_access_token(subject=current_user)
+    return {"access_token": new_access_token, "token_type": "bearer"}

@@ -1,4 +1,4 @@
-import theme from '../../themes.jsx';
+import theme from '../../../themes.jsx';
 
 const Footer = () => {
     return (
