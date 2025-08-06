@@ -5,8 +5,8 @@ from sqlalchemy.exc import IntegrityError
 
 from core.security import get_auth_code_hash
 
-from model.Organization.models import Organizations
-from model.Organization.schemas import OrganizationCreate
+from model.organization.models import Organizations
+from model.organization.schemas import OrganizationCreate
 
 
 

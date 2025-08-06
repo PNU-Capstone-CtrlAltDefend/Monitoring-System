@@ -20,7 +20,7 @@ class Organizations(Base):
     authentication_code = Column(String(128), unique=True, nullable=False)
     description = Column(String(255), nullable=True)
 
-    # Relatiponships
+    # Relationships
     security_managers = relationship("Security_managers", back_populates="organization")
-
+    functional_units = relationship("FunctionalUnits", back_populates="organization")
     
