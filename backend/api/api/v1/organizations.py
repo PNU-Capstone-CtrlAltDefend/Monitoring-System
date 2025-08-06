@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
 
 from model.database import get_db
-from model.Organization.crud import get_organization_by_id
+from model.organization.crud import get_organization_by_id
 from model.security_manager import crud as security_manager_crud
 from model.security_manager import schemas as security_manager_schemas
-from model.Organization.models import Organizations
+from model.organization.models import Organizations
 
 router = APIRouter(
     prefix='/organizations',
