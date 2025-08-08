@@ -62,10 +62,10 @@ async def sign_in(
 
     # JWT 토큰 생성
     access_token = Authorize.create_access_token(
-    subject=user.manager_id,
-    user_claims={
-        "organization_id": str(user.organization_id),
-    }
+        subject=user.manager_id,
+        user_claims={
+            "organization_id": str(user.organization_id),
+        }
     )
     refresh_token = Authorize.create_refresh_token(subject=user.manager_id)
 
@@ -76,15 +76,27 @@ async def sign_in(
     }
 
 @router.post("/refresh")
-def refresh_token(Authorize: AuthJWT = Depends()):
+def refresh_token(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     try:
         Authorize.jwt_refresh_token_required()
     except AuthJWTException:
         raise HTTPException(status_code=401, detail="Login session expired")
 
-    current_user = Authorize.get_jwt_subject()
-    new_access_token = Authorize.create_access_token(subject=current_user)
+    manager_id = Authorize.get_jwt_subject()
+
+    user = security_manager_crud.get_security_manager_by_id(db, manager_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+
+    # access_token 재발급
+    new_access_token = Authorize.create_access_token(
+        subject=user.manager_id,
+        user_claims={
+            "organization_id": str(user.organization_id),
+        }
+    )
     return {"access_token": new_access_token, "token_type": "bearer"}
+
 
 @router.get('/me')
 async def get_current_user(Authorize: Annotated[AuthJWT, Depends()], db: Annotated[Session, Depends(get_db)]):

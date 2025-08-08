@@ -13,8 +13,14 @@ def get_security_manager_by_name(db: Session, name: str) -> Optional[models.Secu
 def get_security_manager_by_id(db: Session, manager_id: str) -> Optional[models.Security_managers]:
     return db.query(models.Security_managers).filter(models.Security_managers.manager_id == manager_id).first()
 
+def get_security_manager_by_manager_id_and_org_id(db: Session, manager_id: str, organization_id: str) -> Optional[models.Security_managers]:
+    return db.query(models.Security_managers).filter(
+        models.Security_managers.manager_id == manager_id,
+        models.Security_managers.organization_id == organization_id
+    ).first()
+
 def get_security_manager_by_email(db: Session, email: str) -> Optional[models.Security_managers]:
-    return db.query(models.Security_managers).filter(models.Security_managers.email == email).first()   
+    return db.query(models.Security_managers).filter(models.Security_managers.email == email).first()
 
 def create_security_manager(db: Session, security_manager: schemas.UserCreate) -> Optional[schemas.User]:
     db_security_manager = models.Security_managers(

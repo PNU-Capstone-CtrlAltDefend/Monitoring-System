@@ -7,6 +7,7 @@ import SignUp from '../pages/signup.jsx';
 import SignIn from '../pages/signin/signin.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import Dashboard from '../pages/dashboard.jsx';
+import Topology from '../pages/topology/topology.jsx';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <Dashboard />
+          },
+          {
+            path: 'topology',
+            element: <Topology />
           }
           
         ]
