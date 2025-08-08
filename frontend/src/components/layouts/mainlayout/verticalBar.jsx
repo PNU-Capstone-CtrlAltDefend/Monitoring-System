@@ -61,8 +61,8 @@ const VerticalNavbar = ({ isExpanded }) => {
                 </ListItemButton>
 
                 <ListItemButton
-                    onClick={() => handleListItemClick('Organization Network Topology')}
-                    selected={isActive('Organization Network Topology')}
+                    onClick={() => handleListItemClick('topology')}
+                    selected={isActive('topology')}
                     sx={listItemStyle}
                 >
                     <ListItemText primary="Organization Network Topology" />
@@ -73,15 +73,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('AssetInformation')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Asset Information" />
-                </ListItemButton>
-
-                <ListItemButton
-                    onClick={() => handleListItemClick('RiskAssessment')}
-                    selected={isActive('RiskAssessment')}
-                    sx={listItemStyle}
-                >
-                    <ListItemText primary="Risk Assessment" />
+                    <ListItemText primary="Behavior Data" />
                 </ListItemButton>
 
                 <ListItemButton

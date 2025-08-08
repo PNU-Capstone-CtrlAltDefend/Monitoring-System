@@ -27,7 +27,19 @@ from model.team import crud as team_crud
 from model.employee import models as Employee_models
 from model.employee import crud as employee_crud
 
+from model.pc import models as Pc_models
+from model.pc import crud as pc_crud
+from model.pc import schemas as pc_schemas
+
+from model.router import models as Router_models
+from model.router import crud as router_crud
+from model.router import schemas as router_schemas
+
+
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
+    """
+    조직 정보, 직원, PC, 라우터 정보를 데이터베이스에 초기화합니다. 
+    """
     #create all tables
     Base.metadata.create_all(bind=engine)
     # 2. 기본 조직 존재 여부 확인
@@ -63,51 +75,55 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     csv_file_path = os.path.join(os.path.dirname(__file__), "employee_data.csv")
     df = pd.read_csv(csv_file_path).fillna("")
 
+    # 4-0. 결측치 대처를 위해, "Unassigned" 값으로 대체
+    unassigned_functional_unit = functional_unit_crud.get_or_create_functional_unit(
+        db, functional_unit_name="Unassigned", organization_id=organization.organization_id
+    )
+
+    unassigned_department = department_crud.get_or_create_department(
+        db, department_name="Unassigned", functional_unit_id=unassigned_functional_unit.functional_unit_id
+    )
+
+    unassigned_team = team_crud.get_or_create_team(
+        db, team_name="Unassigned", department_id=unassigned_department.department_id
+    )
+
     for _, row in df.iloc[1:].iterrows():
-        # 4-1. 기능 단위 삽입
         if not row["employee_name"]:
             break
-        try:
-            functional_unit_name = row["functional_unit"]
-            functional_unit_name = functional_unit_name.split(" - ")[1]
-            functional_unit = functional_unit_crud.get_or_create_functional_unit(
-                db, functional_unit_name=functional_unit_name,
-                organization_id=organization.organization_id
-            )
-        except Exception as e:
-            print(f"Error creating functional unit: {e}")
-            continue    
 
-        # 4-2. 부서 삽입
-        if not row["department"]:
-            continue
         try:
-            department_name = row["department"]
-            department_name = department_name.split(" - ")[1]
-            department = department_crud.get_or_create_department(
-                db, department_name=department_name,
-                functional_unit_id=functional_unit.functional_unit_id
-            )
-        except Exception as e:
-            print(f"Error creating department: {e}")
-            continue
+            # 1. 기능 단위
+            if row["functional_unit"] and " - " in row["functional_unit"]:
+                functional_unit_name = row["functional_unit"].split(" - ")[1]
+                functional_unit = functional_unit_crud.get_or_create_functional_unit(
+                    db, functional_unit_name=functional_unit_name,
+                    organization_id=organization.organization_id
+                )
+            else:
+                functional_unit = unassigned_functional_unit
 
-        # 4-3. 팀 삽입 
-        if not row["team"]:
-            continue
-        try:
-            team_name = row["team"]
-            team_name = team_name.split(" - ")[1]
-            team = team_crud.get_or_create_team(
-                db, team_name=team_name,
-                department_id=department.department_id
-            )
-        except Exception as e:
-            print(f"Error creating team: {e}")
-            continue
+            # 2. 부서
+            if row["department"] and " - " in row["department"]:
+                department_name = row["department"].split(" - ")[1]
+                department = department_crud.get_or_create_department(
+                    db, department_name=department_name,
+                    functional_unit_id=functional_unit.functional_unit_id
+                )
+            else:
+                department = unassigned_department
 
-        # 4-4. 직원 삽입
-        try:
+            # 3. 팀
+            if row["team"] and " - " in row["team"]:
+                team_name = row["team"].split(" - ")[1]
+                team = team_crud.get_or_create_team(
+                    db, team_name=team_name,
+                    department_id=department.department_id
+                )
+            else:
+                team = unassigned_team
+
+            # 4. 직원
             employee = employee_crud.get_or_create_employee(
                 db,
                 employee_id=row['user_id'],
@@ -121,5 +137,27 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         except Exception as e:
             print(f"Error creating employee: {e}")
             continue
+    
+    # 5. PC 데이터 삽입
+    try:
+        pc_data = pc_schemas.PcsCreate(
+            pc_id="PC-6672",
+            organization_id=organization.organization_id,
+            ip_address="192.168.100.113",
+            mac_address="08:00:27:70:e5:f5",
+        )
+        pc_crud.create_pc(db, pc_data)
+    except Exception as e:
+        print(f"Error creating PC: {e}")
+
+    # 6. 라우터 데이터 삽입
+    try:
+        router_data = router_schemas.RouterCreate(
+            organization_id=organization.organization_id,
+            control_ip="192.168.56.2",
+        )
+        router_crud.create_router(db, router_data)
+    except Exception as e:
+        print(f"Error creating Router: {e}")
 
     print("Database initialized successfully.")

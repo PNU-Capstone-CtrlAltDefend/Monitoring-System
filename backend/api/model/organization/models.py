@@ -23,4 +23,5 @@ class Organizations(Base):
     # Relationships
     security_managers = relationship("Security_managers", back_populates="organization")
     functional_units = relationship("FunctionalUnits", back_populates="organization")
-    
+    pcs = relationship("Pcs", back_populates="organization")
+    routers = relationship("Routers", back_populates="organization")
