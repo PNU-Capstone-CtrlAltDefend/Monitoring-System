@@ -35,6 +35,9 @@ from model.router import models as Router_models
 from model.router import crud as router_crud
 from model.router import schemas as router_schemas
 
+from model.behavior_log import models as BehaviorLog_models
+from model.behavior_log import crud as behavior_log_crud
+from model.behavior_log import schemas as behavior_logs_schemas
 
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     """

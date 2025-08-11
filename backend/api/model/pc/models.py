@@ -30,3 +30,4 @@ class Pcs(Base):
     # Relationships
     present_user = relationship("Employees", back_populates="pc", uselist=False)
     organization = relationship("Organizations", back_populates="pcs", uselist=False)
+    behavior_logs = relationship("Behavior_logs", back_populates="pc")
