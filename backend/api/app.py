@@ -12,6 +12,7 @@ from api.v1 import organizations
 from api.v1 import topology
 
 from api.v1.router import network_monitor
+from api.v1.router import log_collector
 
 try:
     init_database(engine, SessionLocal())
@@ -42,3 +43,4 @@ app.include_router(organizations.router, prefix=settings.API_STR, tags=['Organiz
 app.include_router(topology.router, prefix=settings.API_STR, tags=['Topology'])
 
 app.include_router(network_monitor.router, prefix=settings.API_STR, tags=['Network Monitor'])
+app.include_router(log_collector.router, prefix=settings.API_STR, tags=['Log Collector'])
