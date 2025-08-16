@@ -13,7 +13,7 @@ class BehaviorLogCreate(BaseModel):
         extra = "allow"
 
 class BehaviorLogRead(BaseModel):
-    event_id: int
+    event_id: str
     employee_id: str
     pc_id: str
     event_type: str
