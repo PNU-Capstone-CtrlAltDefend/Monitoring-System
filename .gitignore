@@ -54,3 +54,6 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+#data set
+dataset
