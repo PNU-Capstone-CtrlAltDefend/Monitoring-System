@@ -39,6 +39,8 @@ from model.behavior_log import models as BehaviorLog_models
 from model.behavior_log import crud as behavior_log_crud
 from model.behavior_log import schemas as behavior_logs_schemas
 
+from .util import getuserlist, ym_to_date
+
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     """
     조직 정보, 직원, PC, 라우터 정보를 데이터베이스에 초기화합니다. 
@@ -75,9 +77,8 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         security_manager_crud.create_security_manager(db, admin_user)
 
     # 4. 조직 및 직원 데이터 삽입
-    csv_file_path = os.path.join(os.path.dirname(__file__), "employee_data.csv")
-    df = pd.read_csv(csv_file_path).fillna("")
-
+    df = getuserlist()  
+    df = df.fillna("")
     # 4-0. 결측치 대처를 위해, "Unassigned" 값으로 대체
     unassigned_functional_unit = functional_unit_crud.get_or_create_functional_unit(
         db, functional_unit_name="Unassigned", organization_id=organization.organization_id
@@ -125,8 +126,10 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
                 )
             else:
                 team = unassigned_team
-
+    
             # 4. 직원
+            wstart_date = ym_to_date(row.get("wstart"))
+            wend_date = ym_to_date(row.get("wend"))
             employee = employee_crud.get_or_create_employee(
                 db,
                 employee_id=row['user_id'],
@@ -134,6 +137,8 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
                 email=row['email'],
                 role=row['role'],
                 team_id=team.team_id,
+                wstart=wstart_date,
+                wend=wend_date,
                 supervisor=row['supervisor'],
                 anomaly_flag=False
             )
@@ -150,6 +155,14 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
             mac_address="08:00:27:70:e5:f5",
         )
         pc_crud.create_pc(db, pc_data)
+        pc_data = pc_schemas.PcsCreate(
+            pc_id="PC-6673",
+            organization_id=organization.organization_id,
+            ip_address="192.168.100.235",
+            mac_address="08:00:27:9e:c1:c5",
+        )
+        pc_crud.create_pc(db, pc_data)
+
     except Exception as e:
         print(f"Error creating PC: {e}")
 
@@ -162,5 +175,9 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         router_crud.create_router(db, router_data)
     except Exception as e:
         print(f"Error creating Router: {e}")
+
+    
+    # 7. 로그 데이터 삽입 
+        
 
     print("Database initialized successfully.")

@@ -47,5 +47,4 @@ class Settings(BaseSettings):
     ADDITIONAL_ORGANIZATIONS_NAME: str = 'Samsung Electronics'
     ADDITIONAL_ORGANIZATIONS_AUTH_CODE: str = 'samsung123456789'  # 16 characters long
     ADDITIONAL_ORGANIZATIONS_DESCRIPTION: str = '삼성전자는 글로벌 전자제품 및 반도체 기업으로, 혁신적인 기술과 제품을 통해 세계 시장에서 선도적인 위치를 차지하고 있습니다.'
-
 settings = Settings()

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import uuid
 from model.employee.models import Employees
+from datetime import datetime, date
 
 def get_or_create_employee(
     db: Session,
@@ -10,6 +11,8 @@ def get_or_create_employee(
     email: str,
     role: str,
     team_id: int,
+    wstart: date,
+    wend: date,
     supervisor: str = None,
     anomaly_flag: bool = False,
 ):
@@ -24,6 +27,8 @@ def get_or_create_employee(
             email=email,
             role=role,
             team_id=team_id,
+            wstart=wstart,
+            wend=wend,  
             supervisor=supervisor,
             anomaly_flag=anomaly_flag
         )

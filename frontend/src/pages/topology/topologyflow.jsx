@@ -20,17 +20,31 @@ const TopologyFlow = ({ topology }) => {
   }), []);
 
   const initialNodes = useMemo(() => {
-    return topology.nodes.map((node) => ({
-      id: node.id,
-      data: {
-        ...node.data,
-        fullData: node,
-        selected: false,  // 초기 선택 여부
-      },
-      position: node.position,
-      type: node.type,
-    }));
+    const childrenCount = {};
+    const offset = 80;
+
+    const getIndex = (nodeId) => {
+      const parents = topology.edges.filter(e => e.target === nodeId).map(e => e.source);
+      const parent = parents[0] || '__root__';
+      childrenCount[parent] = (childrenCount[parent] || 0) + 1;
+      return childrenCount[parent] - 1;
+    };
+
+    return topology.nodes.map((node) => {
+      let position = node.position;
+      if (node.type === 'pc') {
+        const idx = getIndex(node.id);
+        position = { x: node.position.x, y: node.position.y + idx * offset };
+      }
+      return {
+        id: node.id,
+        data: { ...node.data, fullData: node, selected: false },
+        position,
+        type: node.type,
+      };
+    });
   }, [topology]);
+
 
   const initialEdges = useMemo(() => {
     return topology.edges.map((edge, index) => ({
@@ -45,21 +59,21 @@ const TopologyFlow = ({ topology }) => {
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
 
   const onNodeClick = useCallback((event, node) => {
-  setNodes((nds) =>
-    nds.map((n) => {
-      const isClicked = n.id === node.id;
-      const isAlreadySelected = n.data.selected;
-      return {
-        ...n,
-        data: {
-          ...n.data,
-          selected: isClicked ? !isAlreadySelected : false,
-        },
-      };
-    })
-  );
-  setSelectedId((prevId) => (prevId === node.id ? null : node.id));
-}, [setNodes]);
+    setNodes((nds) =>
+      nds.map((n) => {
+        const isClicked = n.id === node.id;
+        const isAlreadySelected = n.data.selected;
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            selected: isClicked ? !isAlreadySelected : false,
+          },
+        };
+      })
+    );
+    setSelectedId((prevId) => (prevId === node.id ? null : node.id));
+  }, [setNodes]);
 
   return (
     <div style={{ width: '100%', height: '600px' }}>

@@ -60,13 +60,13 @@ const VerticalNavbar = ({ isExpanded }) => {
                     <ListItemText primary="Dashboard" />
                 </ListItemButton>
 
-                <ListItemButton
+                {/* <ListItemButton
                     onClick={() => handleListItemClick('topology')}
                     selected={isActive('topology')}
                     sx={listItemStyle}
                 >
                     <ListItemText primary="Organization Network Topology" />
-                </ListItemButton>
+                </ListItemButton> */}
 
                 <ListItemButton
                     onClick={() => handleListItemClick('AssetInformation')}
