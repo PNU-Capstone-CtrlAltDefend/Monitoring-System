@@ -67,3 +67,6 @@ def get_behavior_logs_by_period(db: Session, start_time: Optional[datetime] = No
         query = query.filter(Behavior_logs.timestamp <= end_time)
     
     return query.order_by(Behavior_logs.timestamp.desc()).all()
+
+def get_behavior_logs_by_event_id(db: Session, event_id: str) -> List[Behavior_logs]:
+    return db.query(Behavior_logs).filter(Behavior_logs.event_id == event_id).all()
