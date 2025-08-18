@@ -5,6 +5,13 @@ from sqlalchemy.exc import IntegrityError, OperationalError, DataError
 from pydantic import ValidationError
 import logging
 import json
+from typing import Annotated
+
+#광훈 버전 
+# from fastapi import APIRouter, Depends, HTTPException, status, Request
+# from sqlalchemy.orm import Session
+# import json, secrets, string
+# from pydantic import ValidationError
 
 from model.database import get_db
 
@@ -51,6 +58,15 @@ def _parse_payload(raw: bytes) -> List[Dict[str, Any]]:
             log.warning("Invalid JSON line: %s | line=%r", e, line[:200])
             raise HTTPException(status_code=400, detail="Invalid JSON (NDJSON line)")
     return objs
+# 광훈 버전
+# ALNUM_UP = string.ascii_uppercase + string.digits
+# def _gen_event_id() -> str:
+#     """
+#     {XXXX-XXXXXXXX-XXXXXXXX} 패턴의 랜덤 ID 생성
+#     """
+#     def seg(n: int) -> str:
+#         return ''.join(secrets.choice(ALNUM_UP) for _ in range(n))
+#     return f'{{{seg(4)}-{seg(8)}-{seg(8)}}}'
 
 @router.post("/post_log")
 async def post_behavior_log(
@@ -109,3 +125,40 @@ async def post_behavior_log(
     except Exception as e:
         log.exception("Unhandled exception while handling /post_log: %s", e)
         raise HTTPException(status_code=500, detail="Internal error")
+    
+    # 광훈 버전 
+    #     try:
+    #         data_dict = json.loads(raw_data)
+    #     except json.JSONDecodeError:
+    #         raise HTTPException(status_code=400, detail="Invalid JSON")
+        
+    #     max_attempts = 5
+    #     event_id = None
+    #     for _ in range(max_attempts):
+    #         candidate = _gen_event_id()
+    #         if not behavior_log_crud.get_behavior_logs_by_event_id(db, candidate):
+    #             event_id = candidate
+    #             break
+    #     if not event_id:    
+    #         raise HTTPException(status_code=500, detail="Failed to allocate unique event_id")
+        
+    #     data_dict["event_id"] = event_id
+
+    #     try:
+    #         log_data = behavior_log_schemas.BehaviorLogCreate(**data_dict)
+    #     except ValidationError as e:
+    #         raise HTTPException(status_code=422, detail=e.errors())
+        
+    #     try:
+    #         new_log = behavior_log_crud.create_behavior_log(db, log_data)
+    #     except Exception as e:
+    #         raise HTTPException(status_code=500, detail=str(e))
+        
+    #     return {"msg": "로그가 성공적으로 저장되었습니다.", "event_id": new_log.event_id}
+    
+    # except Exception as e:
+    #     print(f"로그 저장 중 오류 발생: {e}")
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail=str(e)
+    #     )
