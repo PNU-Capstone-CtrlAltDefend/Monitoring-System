@@ -22,6 +22,7 @@ def getuserlist(dname='r4.2'):
     
     alluser = {}
     alreadyFired = []
+
     for file in allfiles:
         af = (pd.read_csv(file, delimiter=',')).values
         employeesThisMonth = []
@@ -41,6 +42,7 @@ def getuserlist(dname='r4.2'):
     df.columns = ['employee_name', 'email', 'role', 'b_unit', 'functional_unit', 'department', 'team', 'supervisor', 'wstart', 'wend']
 
     df = df.reset_index().rename(columns={'index': 'user_id'})
+    print(df.head())
     return df
 
 def ym_to_date(s: str) -> date | None:

@@ -1,8 +1,10 @@
 import os
 import pandas as pd 
+from datetime import datetime
 from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from core.config import settings
 from model.database import engine, get_db, Base
@@ -45,6 +47,10 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     """
     조직 정보, 직원, PC, 라우터 정보를 데이터베이스에 초기화합니다. 
     """
+    print("데이터 베이스 초기화를 건너 뛰려면 1을 입력하세요.")
+    if input() == "1": 
+        return
+    
     #create all tables
     Base.metadata.create_all(bind=engine)
     # 2. 기본 조직 존재 여부 확인
@@ -92,7 +98,7 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         db, team_name="Unassigned", department_id=unassigned_department.department_id
     )
 
-    for _, row in df.iloc[1:].iterrows():
+    for _, row in df.iloc[0:].iterrows():
         if not row["employee_name"]:
             break
 
@@ -176,8 +182,8 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     except Exception as e:
         print(f"Error creating Router: {e}")
 
-    
-    # 7. 로그 데이터 삽입 
-        
+
+    except Exception as e:
+        print(f"Error creating Behavior Logs: {e}")
 
     print("Database initialized successfully.")

@@ -8,8 +8,7 @@ class Behavior_logs(Base):
     __tablename__ = 'behavior_logs'
     event_id = Column( 
         String(64),
-        primary_key=True,
-        autoincrement=True
+        primary_key=True
     )
     employee_id = Column(String(20), ForeignKey("employees.employee_id"), nullable=False)
     pc_id = Column(String(80), ForeignKey("pcs.pc_id"), nullable=False)

@@ -1,13 +1,16 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
 from datetime import datetime
 
 from model.behavior_log.models import Behavior_logs, Http_logs, Email_logs, Device_logs, Logon_logs, File_logs
 from model.behavior_log.schemas import BehaviorLogCreate, HttpLogCreate, EmailLogCreate, DeviceLogCreate, LogonLogCreate, FileLogCreate
-from typing import Optional , List
+from typing import Optional , List, Tuple, Iterable
 
 def create_behavior_log(db: Session, log_data: BehaviorLogCreate) -> Behavior_logs:
     # 1. 공통 로그 저장
     base_log = Behavior_logs(
+        event_id = log_data.event_id,
         employee_id=log_data.employee_id,
         pc_id=log_data.pc_id,
         timestamp=log_data.timestamp,

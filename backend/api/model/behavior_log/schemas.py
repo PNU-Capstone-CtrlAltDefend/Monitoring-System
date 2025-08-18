@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 
 class BehaviorLogCreate(BaseModel):
+    event_id: str
     employee_id: str
     pc_id: str
     timestamp: datetime
