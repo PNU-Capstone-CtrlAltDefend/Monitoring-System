@@ -29,6 +29,14 @@ pgadmin/
 
 #db data 
 backend/db/data/
+*.pkl
+*.gz
+numeric_data.pkl
+db_data.tar.gz
+
+#csv 
+*.csv
+*.Identifier
 
 # Python
 __pycache__/
@@ -54,3 +62,6 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+#data set
+datasetbackend/api/services/feature_extraction/*.pkl

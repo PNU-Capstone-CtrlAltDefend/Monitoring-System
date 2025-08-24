@@ -1,8 +1,10 @@
 import os
 import pandas as pd 
+from datetime import datetime
 from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from core.config import settings
 from model.database import engine, get_db, Base
@@ -38,11 +40,18 @@ from model.router import schemas as router_schemas
 from model.behavior_log import models as BehaviorLog_models
 from model.behavior_log import crud as behavior_log_crud
 from model.behavior_log import schemas as behavior_logs_schemas
+from model.behavior_log.init_behavior_log import BehaviorLogInserter
+
+from .util import getuserlist, ym_to_date
 
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     """
     조직 정보, 직원, PC, 라우터 정보를 데이터베이스에 초기화합니다. 
     """
+    print("데이터 베이스 초기화를 건너 뛰려면 1을 입력하세요.")
+    if input() == "1": 
+        return
+    
     #create all tables
     Base.metadata.create_all(bind=engine)
     # 2. 기본 조직 존재 여부 확인
@@ -75,9 +84,8 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         security_manager_crud.create_security_manager(db, admin_user)
 
     # 4. 조직 및 직원 데이터 삽입
-    csv_file_path = os.path.join(os.path.dirname(__file__), "employee_data.csv")
-    df = pd.read_csv(csv_file_path).fillna("")
-
+    df = getuserlist()  
+    df = df.fillna("")
     # 4-0. 결측치 대처를 위해, "Unassigned" 값으로 대체
     unassigned_functional_unit = functional_unit_crud.get_or_create_functional_unit(
         db, functional_unit_name="Unassigned", organization_id=organization.organization_id
@@ -91,7 +99,7 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         db, team_name="Unassigned", department_id=unassigned_department.department_id
     )
 
-    for _, row in df.iloc[1:].iterrows():
+    for _, row in df.iloc[0:].iterrows():
         if not row["employee_name"]:
             break
 
@@ -125,8 +133,10 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
                 )
             else:
                 team = unassigned_team
-
+    
             # 4. 직원
+            wstart_date = ym_to_date(row.get("wstart"))
+            wend_date = ym_to_date(row.get("wend"))
             employee = employee_crud.get_or_create_employee(
                 db,
                 employee_id=row['user_id'],
@@ -134,6 +144,8 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
                 email=row['email'],
                 role=row['role'],
                 team_id=team.team_id,
+                wstart=wstart_date,
+                wend=wend_date,
                 supervisor=row['supervisor'],
                 anomaly_flag=False
             )
@@ -150,6 +162,14 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
             mac_address="08:00:27:70:e5:f5",
         )
         pc_crud.create_pc(db, pc_data)
+        pc_data = pc_schemas.PcsCreate(
+            pc_id="PC-6673",
+            organization_id=organization.organization_id,
+            ip_address="192.168.100.235",
+            mac_address="08:00:27:9e:c1:c5",
+        )
+        pc_crud.create_pc(db, pc_data)
+
     except Exception as e:
         print(f"Error creating PC: {e}")
 
@@ -163,4 +183,13 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     except Exception as e:
         print(f"Error creating Router: {e}")
 
+    # 7. 행동 로그 데이터 삽입
+    try:
+        base_path = Path(__file__).resolve().parent/"dataset"/"behavior_logs"
+        behavior_log_inserter = BehaviorLogInserter(engine, db, organization_id=organization.organization_id, base_path=base_path)
+        behavior_log_inserter.init_behavior_logs()
+    except Exception as e:
+        print(f"Error creating Behavior Logs: {e}")
+
+    # 8. 사용자 주 PC/공유 PC 정보 저장
     print("Database initialized successfully.")
