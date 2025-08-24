@@ -40,6 +40,7 @@ from model.router import schemas as router_schemas
 from model.behavior_log import models as BehaviorLog_models
 from model.behavior_log import crud as behavior_log_crud
 from model.behavior_log import schemas as behavior_logs_schemas
+from model.behavior_log.init_behavior_log import BehaviorLogInserter
 
 from .util import getuserlist, ym_to_date
 
@@ -182,8 +183,13 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     except Exception as e:
         print(f"Error creating Router: {e}")
 
-
+    # 7. 행동 로그 데이터 삽입
+    try:
+        base_path = Path(__file__).resolve().parent/"dataset"/"behavior_logs"
+        behavior_log_inserter = BehaviorLogInserter(engine, db, organization_id=organization.organization_id, base_path=base_path)
+        behavior_log_inserter.init_behavior_logs()
     except Exception as e:
         print(f"Error creating Behavior Logs: {e}")
 
+    # 8. 사용자 주 PC/공유 PC 정보 저장
     print("Database initialized successfully.")
