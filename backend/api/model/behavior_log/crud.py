@@ -50,6 +50,9 @@ def create_behavior_log(db: Session, log_data: BehaviorLogCreate) -> Behavior_lo
 def get_all_behavior_logs(db: Session):
     return db.query(Behavior_logs).all()
 
+def get_behavior_logs_by_event_id(db: Session, event_id: str) -> List[Behavior_logs]:
+    return db.query(Behavior_logs).filter(Behavior_logs.event_id == event_id).all()
+
 def get_behavior_logs_by_employee_id(db: Session, employee_id: str) -> List[Behavior_logs]:
     return db.query(Behavior_logs).filter(Behavior_logs.employee_id == employee_id).all()
 
@@ -68,5 +71,17 @@ def get_behavior_logs_by_period(db: Session, start_time: Optional[datetime] = No
     
     return query.order_by(Behavior_logs.timestamp.desc()).all()
 
-def get_behavior_logs_by_event_id(db: Session, event_id: str) -> List[Behavior_logs]:
-    return db.query(Behavior_logs).filter(Behavior_logs.event_id == event_id).all()
+def get_logon_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Logon_logs]:
+    return db.query(Logon_logs).filter(Logon_logs.event_id.in_(event_ids)).all()
+
+def get_http_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Http_logs]:
+    return db.query(Http_logs).filter(Http_logs.event_id.in_(event_ids)).all()
+
+def get_email_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Email_logs]:
+    return db.query(Email_logs).filter(Email_logs.event_id.in_(event_ids)).all()
+
+def get_device_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Device_logs]:
+    return db.query(Device_logs).filter(Device_logs.event_id.in_(event_ids)).all()
+
+def get_file_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[File_logs]:
+    return db.query(File_logs).filter(File_logs.event_id.in_(event_ids)).all()
