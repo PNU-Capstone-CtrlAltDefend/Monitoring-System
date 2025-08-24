@@ -34,6 +34,9 @@ backend/db/data/
 numeric_data.pkl
 db_data.tar.gz
 
+#csv 
+*.csv
+*.Identifier
 
 # Python
 __pycache__/
