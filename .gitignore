@@ -61,4 +61,4 @@ Thumbs.db
 .idea/
 
 #data set
-dataset
+datasetbackend/api/services/feature_extraction/*.pkl
