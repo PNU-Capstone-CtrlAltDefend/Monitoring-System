@@ -32,6 +32,8 @@ backend/db/data/
 *.pkl
 *.gz
 numeric_data.pkl
+db_data.tar.gz
+
 
 # Python
 __pycache__/
