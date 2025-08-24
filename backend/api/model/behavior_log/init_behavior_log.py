@@ -59,25 +59,25 @@ class BehaviorLogInserter:
         print("행동 로그 삽입: 1, 건너뛰기: 2")
         if input() == "2":
             return
-        
-        # 1. 디바이스 로그 데이터 삽입
+        # 1. 로그온 로그
+        print("로그온 로그 삽입: 2 건너뛰기: 1")
+        if input() != "1":
+            self.insert_logon_log()
+        # 2. 디바이스 로그 데이터 삽입
         print("디바이스 로그 삽입: 2 건너뛰기: 1")
         if input() != "1":
             self.insert_device_log()
 
-        # 2. http 로그 
+        # 3. http 로그 
         print("http 로그 삽입: 2 건너뛰기: 1")
         if input() != "1":
             self.insert_http_log() 
 
-        # 3. 파일 로그
+        # 4. 파일 로그
         print("파일 로그 삽입: 2 건너뛰기: 1")
         if input() != "1":
             self.insert_file_log()
-        # 4. 로그온 로그
-        print("로그온 로그 삽입: 2 건너뛰기: 1")
-        if input() != "1":
-            self.insert_logon_log()
+        
         # 5. 이메일 로그 
         print("이메일 로그 삽입: 2 건너뛰기: 1")
         if input() != "1":
@@ -91,7 +91,7 @@ class BehaviorLogInserter:
             logon_csv = (Path(self.base_path) / "logon.csv")
             ldf = pd.read_csv(logon_csv)
             ldf["date_dt"] = pd.to_datetime(ldf["date"], format="%m/%d/%Y %H:%M:%S")
-
+            ldf = ldf.sort_values(by="date_dt")
             print(ldf.head())
             itor = 0
             for row in reversed(list(ldf.itertuples(index = False))):
@@ -116,12 +116,12 @@ class BehaviorLogInserter:
                     employee_id=row.user,
                     pc_id=row.pc,
                     timestamp=row.date_dt,  
-                    event_type="device",
+                    event_type="logon",
                     activity=row.activity,
                 )
                 behavior_log_crud.create_behavior_log(self.db, logon_log_data)
         except Exception as e:
-            print(f"디바이스 로그 삽입 중 오류 발생: {e}")
+            print(f"로그온 로그 삽입 중 오류 발생: {e}")
         return
         
     def insert_device_log(self):
@@ -176,11 +176,12 @@ class BehaviorLogInserter:
             hdf["date_dt"] = pd.to_datetime(hdf["date"], format="%m/%d/%Y %H:%M:%S")
             hdf = hdf.sort_values(by="date_dt")
             print(hdf.head())
-
             itor = 0
             for row in reversed(list(hdf.itertuples(index = False))):
                 itor += 1
                 print(f"processing ittor: {itor}")
+                if behavior_log_crud.get_behavior_logs_by_event_id(self.db,row.id):
+                    continue     
                 if row.date_dt < self.cutoff_dt:    
                     break
                 
@@ -208,6 +209,8 @@ class BehaviorLogInserter:
         except Exception as e:
             print(f"HTTP 로그 삽입 중 오류 발생: {e}")
         return
+    
+
     def insert_file_log(self):
         """
         파일 로그 삽입 메서드 
@@ -298,9 +301,9 @@ class BehaviorLogInserter:
         except Exception as e:
             print(f"이메일 로그 삽입 중 오류 발생: {e}")
 
+# 수동 삽입 코드 
+# base_path = (Path(__file__).resolve().parent.parent / "dataset" / "behavior_log" )
+# loginserter = BehaviorLogInserter(engine, SessionLocal(), organization_id="d038bcfa-08aa-4c40-a3e8-0fd73dbd6436", base_path=base_path)
 
-base_path = (Path(__file__).resolve().parent.parent / "dataset" / "behavior_log" )
-loginserter = BehaviorLogInserter(engine, SessionLocal(), organization_id="d038bcfa-08aa-4c40-a3e8-0fd73dbd6436", base_path=base_path)
-
-loginserter.init_behavior_log()
+# loginserter.init_behavior_log()
 
