@@ -29,6 +29,7 @@ pgadmin/
 
 #db data 
 backend/db/data/
+numeric_data.pkl
 
 # Python
 __pycache__/
