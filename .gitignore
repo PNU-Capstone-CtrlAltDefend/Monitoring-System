@@ -30,7 +30,7 @@ pgadmin/
 #db data 
 backend/db/data/
 *.pkl
-
+*.gz
 # Python
 __pycache__/
 *.py[cod]
