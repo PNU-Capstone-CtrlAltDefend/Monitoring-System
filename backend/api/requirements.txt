@@ -23,6 +23,11 @@ pandas==2.2.3
 numpy==2.2.2
 orjson==3.9.7
 
+# 머신 러닝
+scikit-learn==1.5.2
+imbalanced-learn==0.12.3
+joblib==1.4.2
+
 # 기타
 httpx==0.25.0
 email-validator==2.0.0.post2
