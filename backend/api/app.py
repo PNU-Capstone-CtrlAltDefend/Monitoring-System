@@ -44,7 +44,7 @@ origins = [
 ]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # 또는 ["*"] 로 모든 도메인 허용 가능 (주의)
+    allow_origins=origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
