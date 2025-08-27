@@ -62,11 +62,7 @@ class FeatureAggregator:
                     i_fnames = tmp[3]
                     towrite_list.append([starttime, endtime, v,] + (uw.loc[v, ['ITAdmin']]).tolist() + tmp[2] )
         towrite = pd.DataFrame(columns = cols2a + i_fnames, data = towrite_list)
-        
-        pd.set_option('display.max_columns', None)  
-        print("주간 피처 데이터:")
-        print (towrite.head(3))
-        return towrite 
+        return user_dict, towrite 
     
     def _feature_calculate(self, ud: pd.DataFrame, mode = 'week', data = 'r4.2'):
         """

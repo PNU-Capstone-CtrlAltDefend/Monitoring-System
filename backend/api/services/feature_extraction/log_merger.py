@@ -29,7 +29,6 @@ class LogMerger:
         """
         병합된 표준 포맷 DataFrame 반환
         """
-
         base = self.df.copy()
         if base.empty:
             return pd.DataFrame(columns=TARGET_COLUMNS)
@@ -73,7 +72,7 @@ class LogMerger:
             url_or_fname = getattr(row, "url", None)
             if pd.isna(url_or_fname):
                 url_or_fname = getattr(row, "filename", None)
-            
+              
             rows.append({
                 "date": row.timestamp,
                 "user": row.employee_id,

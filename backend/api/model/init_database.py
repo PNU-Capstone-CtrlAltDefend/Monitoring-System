@@ -184,10 +184,11 @@ def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
         print(f"Error creating Router: {e}")
 
     # 7. 행동 로그 데이터 삽입
+    
     try:
-        base_path = Path(__file__).resolve().parent/"dataset"/"behavior_logs"
+        base_path = Path(__file__).resolve().parent/"dataset"/"behavior_log"
         behavior_log_inserter = BehaviorLogInserter(engine, db, organization_id=organization.organization_id, base_path=base_path)
-        behavior_log_inserter.init_behavior_logs()
+        behavior_log_inserter.init_behavior_log()
     except Exception as e:
         print(f"Error creating Behavior Logs: {e}")
 

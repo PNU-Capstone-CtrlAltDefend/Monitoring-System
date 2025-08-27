@@ -34,10 +34,12 @@ backend/db/data/
 numeric_data.pkl
 db_data.tar.gz
 
-#csv 
+# csv 
 *.csv
 *.Identifier
 
+# model data
+*.joblib
 # Python
 __pycache__/
 *.py[cod]

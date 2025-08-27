@@ -222,6 +222,8 @@ class NumericEncoder:
         return [n_des, int(act['#att']), Xemail, n_exdes, n_bccdes, exbccmail, int(act['size']), email_text_len, email_text_nwords]
     
     def _http_process(self, act):
+        if pd.isna(act['url/fname']):
+            return [1, 0, 0, 0, 0]
         url_len = len(act['url/fname'])
         url_depth = act['url/fname'].count('/')-2
         content_len = 0
