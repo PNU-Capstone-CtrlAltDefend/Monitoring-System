@@ -14,6 +14,17 @@ from api.v1 import topology
 from api.v1.router import network_monitor
 from api.v1.router import log_collector
 
+print(
+"""   
+======================================        
+ _____               _                
+/  ___|             | |               
+\ `--.   ___  _ __  | |_  _ __   __ _ 
+ `--. \ / _ \| '_ \ | __|| '__| / _` |
+/\__/ /|  __/| | | || |_ | |   | (_| |
+\____/  \___||_| |_| \__||_|    \__,_|
+======================================                                 
+""")
 try:
     init_database(engine, SessionLocal())
 except Exception as e:
