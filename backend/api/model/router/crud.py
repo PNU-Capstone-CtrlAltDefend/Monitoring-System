@@ -32,3 +32,6 @@ def update_router_state(db: Session, update_data: RouterUpdate) -> Routers:
 
 def get_routers_by_organization_id(db: Session, organization_id: uuid.UUID) -> list[Routers]:
     return db.query(Routers).filter(Routers.organization_id == organization_id).all()   
+
+def get_router_by_connected_mac(db: Session, mac_address: str) -> Routers | None:
+    return db.query(Routers).filter(Routers.connected_mac_addresses.contains([mac_address])).first()

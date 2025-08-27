@@ -32,7 +32,7 @@ class AnomalyDetector:
         preprocessed_data = pd.read_pickle(DATA_PATH)
 
         pipe = joblib.load(MODEL_PATH)
-        
+
         user_idx = preprocessed_data["user"].tolist() 
         X_inf = preprocessed_data.drop(columns=["user"], errors="ignore")
 
@@ -76,6 +76,6 @@ class AnomalyDetector:
         user_dict, preprocessed_data = preprocessor.run()
         return user_dict, preprocessed_data
 
-anomalydetector = AnomalyDetector(engine, SessionLocal(), datetime(2010,10,11), datetime(2010,10,18))
-result = anomalydetector.run()
-print(result)
+# anomalydetector = AnomalyDetector(engine, SessionLocal(), datetime(2010,10,11), datetime(2010,10,18))
+# result = anomalydetector.run()
+# print(result)
