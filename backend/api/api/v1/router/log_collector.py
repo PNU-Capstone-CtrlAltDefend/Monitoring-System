@@ -3,22 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, OperationalError, DataError
 from pydantic import ValidationError
-import logging
 import json
-from typing import Annotated
-
-#광훈 버전 
-# from fastapi import APIRouter, Depends, HTTPException, status, Request
-# from sqlalchemy.orm import Session
-# import json, secrets, string
-# from pydantic import ValidationError
+import secrets
+import string
 
 from model.database import get_db
-
 from model.behavior_log import schemas as behavior_log_schemas
 from model.behavior_log import crud as behavior_log_crud
-
-log = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/log_collector",
@@ -55,18 +46,17 @@ def _parse_payload(raw: bytes) -> List[Dict[str, Any]]:
         try:
             objs.append(json.loads(line))
         except json.JSONDecodeError as e:
-            log.warning("Invalid JSON line: %s | line=%r", e, line[:200])
             raise HTTPException(status_code=400, detail="Invalid JSON (NDJSON line)")
     return objs
-# 광훈 버전
-# ALNUM_UP = string.ascii_uppercase + string.digits
-# def _gen_event_id() -> str:
-#     """
-#     {XXXX-XXXXXXXX-XXXXXXXX} 패턴의 랜덤 ID 생성
-#     """
-#     def seg(n: int) -> str:
-#         return ''.join(secrets.choice(ALNUM_UP) for _ in range(n))
-#     return f'{{{seg(4)}-{seg(8)}-{seg(8)}}}'
+
+ALNUM_UP = string.ascii_uppercase + string.digits
+def _gen_event_id() -> str:
+     """
+     {XXXX-XXXXXXXX-XXXXXXXX} 패턴의 랜덤 ID 생성
+     """
+     def seg(n: int) -> str:
+         return ''.join(secrets.choice(ALNUM_UP) for _ in range(n))
+     return f'{{{seg(4)}-{seg(8)}-{seg(8)}}}'
 
 @router.post("/post_log")
 async def post_behavior_log(
@@ -83,82 +73,63 @@ async def post_behavior_log(
         try:
             data_dicts = _parse_payload(raw_data)
         except HTTPException:
-            log.warning("Invalid JSON from %s", request.client.host if request.client else "unknown")
             raise
 
         if not data_dicts:
             raise HTTPException(status_code=400, detail="Empty payload")
 
         # 스키마 검증
-        event_ids: List[int] = []
+        event_ids: List[str] = []
         for i, rec in enumerate(data_dicts, start=1):
+            # event_id 주입
+            rec = dict(rec)
+            rec["event_id"] = _gen_event_id()
+
             try:
                 log_data = behavior_log_schemas.BehaviorLogCreate(**rec)
             except ValidationError as e:
-                log.info("ValidationError (record %d): %s | payload=%s", i, e.errors(), rec)
                 raise HTTPException(status_code=400, detail=e.errors())
 
             # DB 처리
-            try:
-                new_log = behavior_log_crud.create_behavior_log(db, log_data)
-                event_ids.append(new_log.event_id)
-            except IntegrityError as e:
-                # FK / UNIQUE / NOT NULL 등 무결성 위반
-                db.rollback()
-                log.exception("IntegrityError (record %d): %s | payload=%s", i, e.orig, rec)
-                raise HTTPException(status_code=409, detail=str(e.orig))
-            except DataError as e:
-                # 타입/길이 초과 등 데이터 문제
-                db.rollback()
-                log.exception("DataError (record %d): %s | payload=%s", i, e.orig, rec)
-                raise HTTPException(status_code=400, detail=str(e.orig))
-            except OperationalError:
-                # DB 접속/트랜잭션 문제
-                db.rollback()
-                log.exception("OperationalError (DB unavailable)")
-                raise HTTPException(status_code=503, detail="Database unavailable")
+            attempts = 0
+            max_attempts = 5
+            while True:
+                try:
+                    new_log = behavior_log_crud.create_behavior_log(db, log_data)
+                    event_ids.append(new_log.event_id)
+                    break
+                except IntegrityError as ie:
+                    # PK / FK / UNIQUE / NOT NULL 등 무결성 위반
+                    db.rollback()
+                    err_str = str(ie.orig)
+                    # PK 중복인 경우에만 재시도
+                    if attempts < max_attempts - 1 and (
+                        "duplicate" in err_str.lower()
+                        or "unique" in err_str.lower()
+                        or "primary key" in err_str.lower()
+                    ):
+                        attempts += 1
+                        new_id = _gen_event_id()
+
+                        data_dict = log_data.model_dump() if hasattr(log_data, "model_dump") else log_data.dict()
+                        data_dict["event_id"] = new_id
+                        try:
+                            log_data = behavior_log_schemas.BehaviorLogCreate(**data_dict)
+                        except ValidationError as ve:
+                            raise HTTPException(status_code=400, detail=ve.errors())
+                        continue
+                    raise HTTPException(status_code=409, detail=err_str)
+                except DataError as de:
+                    # 타입/길이 초과 등 데이터 문제
+                    db.rollback()
+                    raise HTTPException(status_code=400, detail=str(de.orig))
+                except OperationalError:
+                    # DB 접속/트랜잭션 문제
+                    db.rollback()
+                    raise HTTPException(status_code=503, detail="Database unavailable")
 
         return {"msg": "로그가 성공적으로 저장되었습니다.", "count": len(event_ids), "event_ids": event_ids}
 
     except Exception:
-        raise
-    except Exception as e:
-        log.exception("Unhandled exception while handling /post_log: %s", e)
+        db.rollback()
         raise HTTPException(status_code=500, detail="Internal error")
-    
-    # 광훈 버전 
-    #     try:
-    #         data_dict = json.loads(raw_data)
-    #     except json.JSONDecodeError:
-    #         raise HTTPException(status_code=400, detail="Invalid JSON")
-        
-    #     max_attempts = 5
-    #     event_id = None
-    #     for _ in range(max_attempts):
-    #         candidate = _gen_event_id()
-    #         if not behavior_log_crud.get_behavior_logs_by_event_id(db, candidate):
-    #             event_id = candidate
-    #             break
-    #     if not event_id:    
-    #         raise HTTPException(status_code=500, detail="Failed to allocate unique event_id")
-        
-    #     data_dict["event_id"] = event_id
-
-    #     try:
-    #         log_data = behavior_log_schemas.BehaviorLogCreate(**data_dict)
-    #     except ValidationError as e:
-    #         raise HTTPException(status_code=422, detail=e.errors())
-        
-    #     try:
-    #         new_log = behavior_log_crud.create_behavior_log(db, log_data)
-    #     except Exception as e:
-    #         raise HTTPException(status_code=500, detail=str(e))
-        
-    #     return {"msg": "로그가 성공적으로 저장되었습니다.", "event_id": new_log.event_id}
-    
-    # except Exception as e:
-    #     print(f"로그 저장 중 오류 발생: {e}")
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail=str(e)
-    #     )
