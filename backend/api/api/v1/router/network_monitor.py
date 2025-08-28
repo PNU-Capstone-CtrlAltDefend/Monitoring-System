@@ -20,16 +20,16 @@ router = APIRouter(
     responses = {404: {'description': 'Not found'}},
 )
 
-@router.post('/post_mac_list')
-def post_mac_list(
-    update: router_schemas.RouterUpdate,
-    db: Annotated[Session, Depends(get_db)]
-):
-    """
-    OpenWRT 라우터로부터 MAC 주소 목록을 받아 데이터베이스에 저장합니다.
-    """
-    try:
-        router_crud.update_router_state(db, update)
-        return {"msg": "라우터 정보가 성공적으로 저장되었습니다."}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+# @router.post('/post_mac_list')
+# def post_mac_list(
+#     update: router_schemas.RouterUpdate,
+#     db: Annotated[Session, Depends(get_db)]
+# ):
+#     """
+#     OpenWRT 라우터로부터 MAC 주소 목록을 받아 데이터베이스에 저장합니다.
+#     """
+#     try:
+#         router_crud.update_router_state(db, update)
+#         return {"msg": "라우터 정보가 성공적으로 저장되었습니다."}
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

@@ -2,7 +2,8 @@
 import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy import case, desc
+    
 from model.pc.models import Pcs, LogonState
 from model.pc.schemas import PcsCreate
 
@@ -52,3 +53,39 @@ def get_ip_and_mac_address_by_id(db:Session, pc_id: str) -> tuple[str | None, st
     if not pc:
         return None
     return (pc.ip_address, pc.mac_address)
+
+def get_logon_pc_percent_by_organization_id(db:Session, organization_id: uuid.UUID) -> float:
+    total_pcs = db.query(Pcs).filter(Pcs.organization_id == organization_id).count()
+    if total_pcs == 0:
+        return 0.0
+    logged_on_pcs = db.query(Pcs).filter(
+        Pcs.organization_id == organization_id,
+        Pcs.current_state == LogonState.ON
+    ).count()
+    return (logged_on_pcs / total_pcs) * 100.0
+
+def get_pcs_status_by_organization_id(db: Session, organization_id: uuid.UUID) -> list[dict]:
+    # present_user_id가 NULL이 아니면 1, 아니면 0
+    is_active = case(
+        (Pcs.present_user_id.isnot(None), 1),
+        else_=0
+    )
+
+    pcs_list = (
+        db.query(Pcs)
+          .filter(Pcs.organization_id == organization_id)
+          .order_by(desc(is_active), Pcs.pc_id.asc())  # 로그인 PC 우선
+          .all()
+    )
+
+    return [
+        {
+            "pc_id": pc.pc_id,
+            "ip_address": pc.ip_address,
+            "mac_address": pc.mac_address,
+            "current_state": pc.current_state.value if hasattr(pc.current_state, "value") else pc.current_state,
+            "present_user_id": pc.present_user_id,
+            "access_flag": pc.access_flag,
+        }
+        for pc in pcs_list
+    ]
