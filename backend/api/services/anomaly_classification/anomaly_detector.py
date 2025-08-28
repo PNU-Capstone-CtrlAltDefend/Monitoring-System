@@ -24,12 +24,13 @@ class AnomalyDetector:
         self.end_date = end_date
 
     def run(self):
-        # user_dict, preprocessed_data = self._get_preprocessed_data()
+        # 전처리 시작
+        user_dict, preprocessed_data = self._get_preprocessed_data()
 
-        DATA_PATH =Path(__file__).resolve().parent.parent / "feature_extraction" / "result" / "user_dict_{}_{}.pkl".format(self.start_date, self.end_date)
-        user_dict = pd.read_pickle(DATA_PATH)
-        DATA_PATH =Path(__file__).resolve().parent.parent / "feature_extraction" / "result" / "start_date_{}_end_date_{}.pkl".format(self.start_date, self.end_date)
-        preprocessed_data = pd.read_pickle(DATA_PATH)
+        # DATA_PATH =Path(__file__).resolve().parent.parent / "feature_extraction" / "result" / "user_dict_{}_{}.pkl".format(self.start_date, self.end_date)
+        # user_dict = pd.read_pickle(DATA_PATH)
+        # DATA_PATH =Path(__file__).resolve().parent.parent / "feature_extraction" / "result" / "start_date_{}_end_date_{}.pkl".format(self.start_date, self.end_date)
+        # preprocessed_data = pd.read_pickle(DATA_PATH)
 
         pipe = joblib.load(MODEL_PATH)
 
@@ -38,7 +39,7 @@ class AnomalyDetector:
 
         # 1) 예측/확률
         y_pred = pipe.predict(X_inf)
-        proba = pipe.predict_proba(X_inf)              #
+        proba = pipe.predict_proba(X_inf)              
         classes = pipe.named_steps["rf"].classes_      
 
         # 편의 인덱스들

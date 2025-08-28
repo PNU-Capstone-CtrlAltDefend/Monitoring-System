@@ -20,7 +20,7 @@ class LogMerger:
     베이스 로그 DF([event_id, employee_id, pc_id, timestamp, event_type])를 받아
     타입별 상세 테이블을 조회하여 표준 포맷 DF로 병합.
     """
-    def __init__(self, engine: Engine, db: Annotated[Session, Depends(Depends(get_db))] | None, df: pd.DataFrame):
+    def __init__(self, engine: Engine, db: Session, df: pd.DataFrame):
         self.engine = engine
         self.db = db
         self.df = df.copy()

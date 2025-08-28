@@ -46,7 +46,7 @@ class LogLoader:
     로그 데이터 로드 클래스
     DB 로부터 특정 주차의 로그 데이터를 조회 및 병합, 저장 
     """
-    def __init__(self, engine: engine, db: Annotated[Session, Depends(get_db)], start_date: datetime, end_date: datetime):
+    def __init__(self, engine: engine, db: Session, start_date: datetime, end_date: datetime):
         self.engine = engine
         self.db = db
         self.start_date = start_date
