@@ -14,15 +14,15 @@ router = APIRouter(
     responses={404: {'description': 'Not found'}},
 )
 
-@router.get('/network-access-control/{organization_id}/{pc_id}/{access_flag}')
-def get_pc_logon_percent(
+@router.get('/{organization_id}/{pc_id}/{access_flag}')
+def control_pc_network(
     organization_id: str,
     pc_id: str,
     access_flag: bool, 
     db: Annotated[Session, Depends(get_db)]
 ):
     """
-    특정 조직의 PC 로그인 비율을 조회합니다.
+    특정 PC 의 접근을 제어합니다. 
     """
     try:
         networkaccesscontroller = NetworkAccessController(db, pc_id=pc_id, access_flag=access_flag)

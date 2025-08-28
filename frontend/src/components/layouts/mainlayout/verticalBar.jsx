@@ -57,7 +57,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('Dashboard')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Dashboard" />
+                    <ListItemText primary="대시보드" />
                 </ListItemButton>
 
                 {/* <ListItemButton
@@ -73,15 +73,15 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('behavior-logs')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Behavior Logs" />
+                    <ListItemText primary="행동 로그 조회" />
                 </ListItemButton>
 
                 <ListItemButton
-                    onClick={() => handleListItemClick('report')}
-                    selected={isActive('report')}
+                    onClick={() => handleListItemClick('PCs')}
+                    selected={isActive('PCs')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Report" />
+                    <ListItemText primary="PC 상태 조회" />
                 </ListItemButton>
 
                 <ListItemButton

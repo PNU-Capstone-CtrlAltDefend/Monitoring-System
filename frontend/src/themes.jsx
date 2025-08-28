@@ -83,6 +83,7 @@ const theme = createTheme({
       main: '#0f0f0f',       // 거의 블랙에 가까운 딥그레이
       light: '#1a1a1a',
       dark: '#000000',
+      white: '#ffffff',
     },
     secondary: {
       main: '#3b3b3b',       // 어두운 회색 포인트
