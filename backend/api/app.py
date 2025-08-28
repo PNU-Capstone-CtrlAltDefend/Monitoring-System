@@ -11,6 +11,8 @@ from api.v1 import auth
 from api.v1 import organizations
 from api.v1 import topology
 from api.v1 import anomaly_detect   
+from api.v1 import network_access_control   
+from api.v1 import pcs
 
 from api.v1.router import network_monitor
 from api.v1.router import log_collector
@@ -55,6 +57,8 @@ app.include_router(auth.router, prefix=settings.API_STR, tags=['auth'])
 app.include_router(organizations.router, prefix=settings.API_STR, tags=['Organizations'])
 app.include_router(topology.router, prefix=settings.API_STR, tags=['Topology'])
 app.include_router(anomaly_detect.router, prefix=settings.API_STR, tags=['Anomaly Detect'])
+app.include_router(network_access_control.router, prefix=settings.API_STR, tags=['Network Access Control'])
+app.include_router(pcs.router, prefix=settings.API_STR, tags=['PC'])
 
 app.include_router(network_monitor.router, prefix=settings.API_STR, tags=['Network Monitor'])
 app.include_router(log_collector.router, prefix=settings.API_STR, tags=['Log Collector'])
