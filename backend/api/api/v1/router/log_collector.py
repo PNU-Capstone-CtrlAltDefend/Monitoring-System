@@ -11,6 +11,8 @@ from model.database import get_db
 from model.behavior_log import schemas as behavior_log_schemas
 from model.behavior_log import crud as behavior_log_crud
 
+from services.logon_pipeline.processor import LogonProcessor
+
 router = APIRouter(
     prefix="/log_collector",
     tags=["Log Collector"],
@@ -68,7 +70,7 @@ async def post_behavior_log(
     """
     try:
         raw_data = await request.body()
-
+        print (raw_data)
         # JSON 파싱
         try:
             data_dicts = _parse_payload(raw_data)
@@ -89,7 +91,7 @@ async def post_behavior_log(
                 log_data = behavior_log_schemas.BehaviorLogCreate(**rec)
             except ValidationError as e:
                 raise HTTPException(status_code=400, detail=e.errors())
-
+            
             # DB 처리
             attempts = 0
             max_attempts = 5
@@ -128,6 +130,11 @@ async def post_behavior_log(
                     db.rollback()
                     raise HTTPException(status_code=503, detail="Database unavailable")
 
+            # 이벤트 타입이 logon일 시, 로그온 처리를 위한 클래스 호출
+            if log_data.event_type == "logon":
+                logonprocessor = LogonProcessor(db, log_data)
+                logonprocessor.run()
+                
         return {"msg": "로그가 성공적으로 저장되었습니다.", "count": len(event_ids), "event_ids": event_ids}
 
     except Exception:

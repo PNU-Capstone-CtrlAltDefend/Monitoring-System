@@ -28,6 +28,9 @@ scikit-learn==1.5.2
 imbalanced-learn==0.12.3
 joblib==1.4.2
 
+# 네트워크 접근 제어를 위한 SSH 라이브러리
+paramiko==4.4.0
+
 # 기타
 httpx==0.25.0
 email-validator==2.0.0.post2

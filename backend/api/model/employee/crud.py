@@ -62,3 +62,6 @@ def get_employee_id_by_name(db:Session, employee_name:str) -> str | None:
     employee = db.query(Employees).filter(Employees.employee_name == employee_name).first()
     return employee.employee_id if employee else None
 
+def get_anomaly_flag_by_employee_id(db: Session, employee_id: str) -> bool | None:
+    employee = db.query(Employees).filter(Employees.employee_id == employee_id).first()
+    return employee.anomaly_flag if employee else None
