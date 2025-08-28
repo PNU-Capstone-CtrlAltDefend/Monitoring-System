@@ -13,6 +13,7 @@ from api.v1 import topology
 from api.v1 import anomaly_detect   
 from api.v1 import network_access_control   
 from api.v1 import pcs
+from api.v1 import behavior_logs
 
 from api.v1.router import network_monitor
 from api.v1.router import log_collector
@@ -62,3 +63,5 @@ app.include_router(pcs.router, prefix=settings.API_STR, tags=['PC'])
 
 app.include_router(network_monitor.router, prefix=settings.API_STR, tags=['Network Monitor'])
 app.include_router(log_collector.router, prefix=settings.API_STR, tags=['Log Collector'])
+
+app.include_router(behavior_logs.router, prefix=settings.API_STR, tags=['Behavior Logs'])

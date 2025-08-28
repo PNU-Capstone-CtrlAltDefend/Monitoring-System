@@ -69,11 +69,11 @@ const VerticalNavbar = ({ isExpanded }) => {
                 </ListItemButton> */}
 
                 <ListItemButton
-                    onClick={() => handleListItemClick('AssetInformation')}
-                    selected={isActive('AssetInformation')}
+                    onClick={() => handleListItemClick('behavior-logs')}
+                    selected={isActive('behavior-logs')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Behavior Data" />
+                    <ListItemText primary="Behavior Logs" />
                 </ListItemButton>
 
                 <ListItemButton
