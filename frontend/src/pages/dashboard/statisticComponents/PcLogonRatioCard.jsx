@@ -1,34 +1,43 @@
-// PcLogonRatioCardMock.jsx
+// PcLogonRatioCard.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, Box, Typography, LinearProgress, Tooltip } from '@mui/material';
+import { get_pc_counts } from '../../../api/dashboard'
+import { useParams } from 'react-router-dom';
 
-const PcLogonRatioCardMock = () => {
-  const MOCK_TOTAL = 2;
-  const MOCK_LOGGED_ON = 0;
-
+const PcLogonRatioCard = () => {
+  const { oid } = useParams();
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({ total: 0, loggedOn: 0 });
+  const [summary, setSummary] = useState({ logon_percent: 0, logon_pc_count: 0, logout_pc_count: 0 });
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      setSummary({ total: MOCK_TOTAL, loggedOn: MOCK_LOGGED_ON });
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(t);
-  }, []);
+    let mounted = true;
+    setLoading(true);
+    get_pc_counts(oid)
+      .then(data => {
+        if (mounted) setSummary(data);
+      })
+      .catch(() => {
+        if (mounted) setSummary({ logon_percent: 0, logon_pc_count: 0, logout_pc_count: 0 });
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
+  }, [oid]);
 
   const ratio = useMemo(() => {
-    if (!summary.total) return 0;
-    return Math.round((summary.loggedOn / summary.total) * 100);
+    return Math.round((summary.logon_percent || 0) * 100);
   }, [summary]);
+
+  const total = summary.logon_pc_count + summary.logout_pc_count;
 
   return (
     <Card
       variant="outlined"
       sx={{
         height: '100%',
-        backgroundColor: '#fff', // 흰색 배경
-        color: '#000',           // 기본 글자색 검정
+        backgroundColor: '#fff',
+        color: '#000',
       }}
     >
       <CardContent>
@@ -36,9 +45,9 @@ const PcLogonRatioCardMock = () => {
           <Typography variant="subtitle2" sx={{ color: '#000' }}>
             로그온 PC 비율
           </Typography>
-          {!!summary.total && (
+          {!!total && (
             <Typography variant="caption" sx={{ color: '#000' }}>
-              {summary.loggedOn}/{summary.total}
+              {summary.logon_pc_count}/{total}
             </Typography>
           )}
         </Box>
@@ -57,7 +66,7 @@ const PcLogonRatioCardMock = () => {
               </Typography>
               <Tooltip title="로그온 PC / 전체 PC">
                 <Typography variant="body2" sx={{ color: '#000' }}>
-                  ({summary.loggedOn}/{summary.total})
+                  ({summary.logon_pc_count}/{total})
                 </Typography>
               </Tooltip>
             </Box>
@@ -70,7 +79,7 @@ const PcLogonRatioCardMock = () => {
                 borderRadius: 9999,
                 mt: 1.5,
                 backgroundColor: '#e0e0e0',
-                '& .MuiLinearProgress-bar': { backgroundColor: '#1976d2' }, // 파란 진행바
+                '& .MuiLinearProgress-bar': { backgroundColor: '#1976d2' },
               }}
             />
           </Box>
@@ -80,4 +89,4 @@ const PcLogonRatioCardMock = () => {
   );
 };
 
-export default PcLogonRatioCardMock;
+export default PcLogonRatioCard;

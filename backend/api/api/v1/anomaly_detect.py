@@ -55,3 +55,17 @@ def get_anomaly_detection_histories(
         return {"results": histories}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get('/get-anomaly-user-counts-by-week/{organization_id}/')
+def get_anomaly_user_counts_by_week(
+    organization_id: str,
+    db: Annotated[Session, Depends(get_db)]
+):
+    """
+    특정 조직의 주별 이상 탐지 사용자 수를 조회합니다.
+    """
+    try:
+        result = anomaly_detection_history_crud.get_anomaly_user_count_per_history(db, UUID(organization_id))
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
