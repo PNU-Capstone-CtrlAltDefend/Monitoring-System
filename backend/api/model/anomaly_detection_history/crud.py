@@ -24,3 +24,7 @@ def get_anomaly_detection_history_by_duration(db: Session, organization_id: uuid
         models.AnomalyDetectionHistories.end_date <= end_date
     ).first()
 
+def get_anomaly_detection_histories(db: Session, organization_id: uuid.UUID):  
+    return db.query(models.AnomalyDetectionHistories).filter(
+        models.AnomalyDetectionHistories.organization_id == organization_id
+    ).all()

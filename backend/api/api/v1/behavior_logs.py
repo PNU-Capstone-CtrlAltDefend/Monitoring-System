@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 
 from model.database import get_db
+from model.behavior_log.crud import get_behavior_logs_by_employee_id
 from model.security_manager.crud import get_security_manager_by_manager_id_and_org_id
 
 from services.behavior_logs.behavior_logs_service import (
@@ -100,3 +101,14 @@ async def get_behavior_log_facets(
         date_from=date_from, date_to=date_to,
         event_types=event_types,
     )
+
+@router.get("/behavior-log/user")
+async def get_user_behavior_logs(
+    db: Annotated[Session, Depends(get_db)],
+    employee_id: str
+):
+    try:
+        result =  get_behavior_logs_by_employee_id(db, employee_id=employee_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
