@@ -3,8 +3,10 @@ import { Box } from '@mui/material';
 import PcLogonRatioCardMock from './statisticComponents/PcLogonRatioCard';
 import CommonCard from '../../components/common/card/CommonCard';
 import MaliciousDetectionsOverTimeChart from './statisticComponents/MaliciousDetectionsOverTimeChart';
-
+import AnomalyAlertListener from '../../components/Alert/AnomalyAlertListener';
+import { useParams } from 'react-router-dom';
 const Dashboard = () => {
+  const { oid } = useParams();
   return (
     <Box
       display="flex"
@@ -19,13 +21,14 @@ const Dashboard = () => {
 
       {/* 우측: 악성 사용자 그래프 */}
       <Box flex={{ xs: '1 1 100%', md: '0 0 70%' }}>
-        <CommonCard title="악성 사용자 탐지 현황">
+        <CommonCard title="주간 악성 사용자 탐지 현황">
           <Box height={250} /* 높이 축소 */>
             <MaliciousDetectionsOverTimeChart />
           </Box>
         </CommonCard>
       </Box>
     </Box>
+    
   );
 };
 

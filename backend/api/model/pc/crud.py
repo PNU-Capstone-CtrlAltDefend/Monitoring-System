@@ -79,6 +79,12 @@ def get_total_pc_count_by_organization_id(db: Session, organization_id: uuid.UUI
     """
     return db.query(Pcs).filter(Pcs.organization_id == organization_id).count()
 
+def get_organization_id_by_pc_id(db:Session, pc_id: str) -> uuid.UUID | None:
+    pc = get_pc_by_id(db, pc_id)
+    if not pc:
+        return None
+    return pc.organization_id   
+
 def get_pcs_status_by_organization_id(db: Session, organization_id: uuid.UUID) -> list[dict]:
     # present_user_id가 NULL이 아니면 1, 아니면 0
     is_active = case(
