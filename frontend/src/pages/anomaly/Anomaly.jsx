@@ -73,6 +73,7 @@ const Anomaly = () => {
               <TableCell>예측 클래스</TableCell>
               <TableCell>이상 확률</TableCell>
               <TableCell>클래스별 확률</TableCell>
+              <TableCell>행위 시나리오</TableCell> {/* 새 열 추가 */}
             </TableRow>
           </TableHead>
           <TableBody
@@ -100,11 +101,16 @@ const Anomaly = () => {
                     }}
                   />
                 </TableCell>
+                <TableCell>
+                  {info.pred_class === 1 && '퇴사 직전, 야근하며 이동식 드라이브를 사용하고 wikileaks.org에 데이터를 업로드한 사용자'}
+                  {info.pred_class === 2 && '경쟁사에 취업을 시도하며 퇴사 직전 데이터 유출을 시도한 사용자'}
+                  {info.pred_class === 3 && '키로거를 설치하고 상사의 계정으로 조직에 혼란을 초래한 시스템 관리자'}
+                </TableCell>
               </TableRow>
             ))}
             {Object.keys(result).length === 0 && !loading && (  
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   탐지할 기간을 선택하고 '탐지 수행' 버튼을 클릭하세요.
                 </TableCell>
               </TableRow>
