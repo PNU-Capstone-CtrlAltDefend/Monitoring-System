@@ -17,3 +17,10 @@ def create_anomaly_detection_history(db: Session, organization_id: uuid.UUID, re
     db.refresh(new_history)
     return new_history
 
+def get_anomaly_detection_history_by_duration(db: Session, organization_id: uuid.UUID, start_date: datetime, end_date: datetime):
+    return db.query(models.AnomalyDetectionHistories).filter(
+        models.AnomalyDetectionHistories.organization_id == organization_id,
+        models.AnomalyDetectionHistories.start_date >= start_date,
+        models.AnomalyDetectionHistories.end_date <= end_date
+    ).first()
+

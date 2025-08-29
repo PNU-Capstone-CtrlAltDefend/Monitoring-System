@@ -57,5 +57,6 @@ class LogonProcessor:
         if(result):
             print(f"네트워크 차단이 성공적으로 완료되었습니다.: {self.log_data.pc_id}")
         # 2. 관리자 이메일 전송
+
         # 3. 관리자 알림 
         pass

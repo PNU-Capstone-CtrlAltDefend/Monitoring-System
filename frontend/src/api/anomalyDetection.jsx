@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL;
  */
 export async function fetchAnomalyDetection({ organizationId, startDate, endDate }) {
   const token = localStorage.getItem('access_token');
-  const url = `${API_URL}/anomalydetect/${organizationId}/?start_dt=${startDate}T00:00:00&end_dt=${endDate}T23:59:59`;
+  const url = `${API_URL}/anomalydetect/${organizationId}/?start_dt=${startDate}T00:00:00&end_dt=${endDate}T00:00:00`;
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });

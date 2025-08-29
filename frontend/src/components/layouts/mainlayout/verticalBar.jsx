@@ -67,7 +67,13 @@ const VerticalNavbar = ({ isExpanded }) => {
                 >
                     <ListItemText primary="Organization Network Topology" />
                 </ListItemButton> */}
-
+                <ListItemButton
+                    onClick={() => handleListItemClick('anomaly')}
+                    selected={isActive('anomaly')}
+                    sx={listItemStyle}
+                >
+                    <ListItemText primary="악성 사용자 탐지" />
+                </ListItemButton>
                 <ListItemButton
                     onClick={() => handleListItemClick('behavior-logs')}
                     selected={isActive('behavior-logs')}
@@ -84,13 +90,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     <ListItemText primary="PC 상태 조회" />
                 </ListItemButton>
 
-                <ListItemButton
-                    onClick={() => handleListItemClick('anomaly')}
-                    selected={isActive('anomaly')}
-                    sx={listItemStyle}
-                >
-                    <ListItemText primary="악성 사용자 탐지" />
-                </ListItemButton>
+                
             </List>
         </aside>
     );
