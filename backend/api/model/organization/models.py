@@ -25,3 +25,4 @@ class Organizations(Base):
     functional_units = relationship("FunctionalUnits", back_populates="organization")
     pcs = relationship("Pcs", back_populates="organization")
     routers = relationship("Routers", back_populates="organization")
+    anomaly_detection_histories = relationship("AnomalyDetectionHistories", back_populates="organization")

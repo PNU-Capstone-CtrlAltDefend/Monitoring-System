@@ -42,18 +42,19 @@ from model.behavior_log import crud as behavior_log_crud
 from model.behavior_log import schemas as behavior_logs_schemas
 from model.behavior_log.init_behavior_log import BehaviorLogInserter
 
+from model.anomaly_detection_history import models as AnomalyDetectionHistory_models
 from .util import getuserlist, ym_to_date
 
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):
     """
     조직 정보, 직원, PC, 라우터 정보를 데이터베이스에 초기화합니다. 
     """
+    Base.metadata.create_all(bind=engine)
     print("데이터 베이스 초기화를 건너 뛰려면 1을 입력하세요.")
     if input() == "1": 
         return
     
     #create all tables
-    Base.metadata.create_all(bind=engine)
     # 2. 기본 조직 존재 여부 확인
     organization = organization_crud.get_organization_by_name(db, settings.ADMIN_COMPANY_NAME)
     if not organization:

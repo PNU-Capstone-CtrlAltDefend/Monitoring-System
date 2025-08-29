@@ -4,6 +4,7 @@ from model.database import get_db, engine
 from sqlalchemy.orm import Session
 from typing import Annotated
 from datetime import datetime   
+from uuid import UUID
 
 from services.anomaly_classification.anomaly_detector import AnomalyDetector
 router = APIRouter(
@@ -26,7 +27,7 @@ def get_anomaly_detection_results(
     2010-10-18T00:00:00+00:00
     """
     try:
-        anomalydetector = AnomalyDetector(engine, db, start_dt, end_dt)
+        anomalydetector = AnomalyDetector(engine, db, start_dt, end_dt, organization_id=UUID(organization_id))
         results = anomalydetector.run()
         print(results)
         return {"results": results}
