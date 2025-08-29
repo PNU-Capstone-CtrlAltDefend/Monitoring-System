@@ -12,3 +12,23 @@ export async function fetchAnomalyDetection({ organizationId, startDate, endDate
   if (!response.ok) throw new Error('이상 탐지 데이터를 가져오는 데 실패했습니다.');
   return await response.json();
 }
+
+export async function fetchAnomalyDetectionDetails(userId, startDate, endDate) {
+  const token = localStorage.getItem('access_token');
+  const url = `${API_URL}/behavior-log/user?employee_id=${userId}&date_from=${startDate}&date_to=${endDate}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('사용자 행동 로그 데이터를 가져오는 데 실패했습니다.');
+  return await response.json();
+}
+
+export async function fetchAnomalyDetectionHistories(organizationId) {
+  const token = localStorage.getItem('access_token');
+  const url = `${API_URL}/anomalydetect/get-histories/${organizationId}/`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('탐지 히스토리를 가져오는 데 실패했습니다.');
+  return await response.json();
+}
