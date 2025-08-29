@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Table, TableBody, TableCell, TableHead, TableRow, CircularProgress } from '@mui/material';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { fetchAnomalyDetection } from '../../api/anomalyDetection';
+import { fetchAnomalyDetection } from '../../services/AnomalyDetection';
 import { useParams } from 'react-router-dom';
 import CommonCard from '../../components/common/card/CommonCard';
 import { useTheme } from '@emotion/react';
