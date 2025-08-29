@@ -69,7 +69,7 @@ const Anomaly = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>사용자ID</TableCell>
+              <TableCell>악성 의심 사용자 ID</TableCell>
               <TableCell>예측 클래스</TableCell>
               <TableCell>이상 확률</TableCell>
               <TableCell>클래스별 확률</TableCell>

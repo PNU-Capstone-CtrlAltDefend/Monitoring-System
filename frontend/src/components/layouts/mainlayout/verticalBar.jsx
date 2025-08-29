@@ -57,7 +57,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('Dashboard')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Dashboard" />
+                    <ListItemText primary="대시보드" />
                 </ListItemButton>
 
                 {/* <ListItemButton
@@ -67,30 +67,30 @@ const VerticalNavbar = ({ isExpanded }) => {
                 >
                     <ListItemText primary="Organization Network Topology" />
                 </ListItemButton> */}
-
-                <ListItemButton
-                    onClick={() => handleListItemClick('behavior-logs')}
-                    selected={isActive('behavior-logs')}
-                    sx={listItemStyle}
-                >
-                    <ListItemText primary="Behavior Logs" />
-                </ListItemButton>
-
-                <ListItemButton
-                    onClick={() => handleListItemClick('report')}
-                    selected={isActive('report')}
-                    sx={listItemStyle}
-                >
-                    <ListItemText primary="Report" />
-                </ListItemButton>
-
                 <ListItemButton
                     onClick={() => handleListItemClick('anomaly')}
                     selected={isActive('anomaly')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Anomaly Detection" />
+                    <ListItemText primary="악성 사용자 탐지" />
                 </ListItemButton>
+                <ListItemButton
+                    onClick={() => handleListItemClick('behavior-logs')}
+                    selected={isActive('behavior-logs')}
+                    sx={listItemStyle}
+                >
+                    <ListItemText primary="행동 로그 조회" />
+                </ListItemButton>
+
+                <ListItemButton
+                    onClick={() => handleListItemClick('PCs')}
+                    selected={isActive('PCs')}
+                    sx={listItemStyle}
+                >
+                    <ListItemText primary="PC 상태 조회" />
+                </ListItemButton>
+
+                
             </List>
         </aside>
     );

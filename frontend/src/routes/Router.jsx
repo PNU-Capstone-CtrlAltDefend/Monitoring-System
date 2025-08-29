@@ -10,6 +10,7 @@ import Dashboard from '../pages/dashboard/dashboard.jsx';
 import BehaviorLogs from '../pages/behavior-logs/behavior-logs.jsx'
 import Topology from '../pages/topology/topology.jsx';
 import Anomaly from '../pages/anomaly/Anomaly.jsx';
+import PCs from '../pages/pc_status/PCs.jsx';
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
           {
             path: 'anomaly',
             element: <Anomaly />
+          },
+          {
+            path: 'PCs',
+            element: <PCs />
           }
         ]
       }
