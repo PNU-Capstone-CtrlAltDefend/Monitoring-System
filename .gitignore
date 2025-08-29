@@ -67,3 +67,6 @@ Thumbs.db
 
 #data set
 datasetbackend/api/services/feature_extraction/*.pkl
+
+# venv
+backend/api/venv/
