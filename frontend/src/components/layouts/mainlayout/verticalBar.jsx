@@ -83,6 +83,14 @@ const VerticalNavbar = ({ isExpanded }) => {
                 >
                     <ListItemText primary="Report" />
                 </ListItemButton>
+
+                <ListItemButton
+                    onClick={() => handleListItemClick('anomaly')}
+                    selected={isActive('anomaly')}
+                    sx={listItemStyle}
+                >
+                    <ListItemText primary="Anomaly Detection" />
+                </ListItemButton>
             </List>
         </aside>
     );

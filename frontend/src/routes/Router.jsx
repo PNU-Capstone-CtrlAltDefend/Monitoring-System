@@ -9,6 +9,7 @@ import ProtectedRoute from './ProtectedRoute.jsx';
 import Dashboard from '../pages/dashboard/dashboard.jsx';
 import BehaviorLogs from '../pages/behavior-logs/behavior-logs.jsx'
 import Topology from '../pages/topology/topology.jsx';
+import Anomaly from '../pages/anomaly/Anomaly.jsx';
 
 const router = createBrowserRouter([
   {
@@ -43,8 +44,11 @@ const router = createBrowserRouter([
           {
             path: 'topology',
             element: <Topology />
+          },
+          {
+            path: 'anomaly',
+            element: <Anomaly />
           }
-          
         ]
       }
     ]
