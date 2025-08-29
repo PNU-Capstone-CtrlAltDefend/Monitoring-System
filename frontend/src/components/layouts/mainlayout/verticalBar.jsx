@@ -89,7 +89,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('anomaly')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="Anomaly Detection" />
+                    <ListItemText primary="악성 사용자 탐지" />
                 </ListItemButton>
             </List>
         </aside>
