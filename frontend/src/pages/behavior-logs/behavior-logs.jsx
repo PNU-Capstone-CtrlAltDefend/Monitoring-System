@@ -3,7 +3,6 @@ import {
   Box, Autocomplete, TextField, IconButton, Popover, List, ListItemButton, ListItemText,
   Chip, Stack, Typography, Divider, Paper, TableContainer, Table, TableHead, TableRow,
   TableCell, TableBody, TableFooter, TablePagination, GlobalStyles, CircularProgress,
-  useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -13,6 +12,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import {
   fetchBehaviorLogs,
@@ -262,8 +262,6 @@ const DetailCell = ({ row }) => {
 // ---------- 메인 컴포넌트 ----------
 const BehaviorLogs = () => {
   const theme = useTheme();
-  const mdDown = useMediaQuery(theme.breakpoints.down('md')); // md↓에서 열 축소
-  const smDown = useMediaQuery(theme.breakpoints.down('sm')); // sm↓에서 더 축소
 
   const [rawLogs, setRawLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -276,8 +274,10 @@ const BehaviorLogs = () => {
 
   const [eventTypes, setEventTypes] = useState(['all']);
 
-  const [sortKey, setSortKey] = useState('time'); // time | department | team | user
-  const [sortOrder, setSortOrder] = useState('desc');
+  const DEFAULT_SORT_PREF = { time: 'desc', department: 'asc', team: 'asc', user: 'asc' };
+  const [sortPref, setSortPref] = useState(DEFAULT_SORT_PREF);
+  const [sortKey, setSortKey] = useState('time');      // time | department | team | user
+  const [sortOrder, setSortOrder] = useState(DEFAULT_SORT_PREF.time);
   const [sortAnchor, setSortAnchor] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -287,6 +287,23 @@ const BehaviorLogs = () => {
   const [dateTo, setDateTo] = useState(null);
   const [rangeDigits, setRangeDigits] = useState('');
   const [isPeriodFocused, setIsPeriodFocused] = useState(false);
+  const [refreshFlag, setRefreshFlag] = useState(0);
+
+  const handleRefresh = () => {
+    pageCache.current = new Map();
+    cursorsRef.current = new Map([[0, null]]);
+    setPage(0);
+    setRefreshFlag((v) => v + 1);
+  };
+
+  const headRowRef = React.useRef(null);
+  const firstBodyRowRef = React.useRef(null);
+  const [headH, setHeadH] = useState(44);
+  const [rowH, setRowH] = useState(42);
+
+  const VISIBLE = 10;  // 화면에 고정으로 보여줄 행 수
+  const PAG_H = 36;    // TablePagination 대략 높이
+  const tableHeight = headH + rowH * VISIBLE + PAG_H;
 
   const footerRef = React.useRef(null);
   const [footerH, setFooterH] = useState(0);
@@ -306,7 +323,7 @@ const BehaviorLogs = () => {
   const makeKey = (p) =>
     JSON.stringify({
       department, team, employee, eventTypes,
-      sortKey, sortOrder, dateFrom, dateTo, p, rowsPerPage,
+      sortKey, sortOrder, dateFrom, dateTo, p, rowsPerPage, refreshFlag,
     });
 
   useEffect(() => {
@@ -344,7 +361,7 @@ const BehaviorLogs = () => {
         }
       })
       .finally(() => setLoading(false));
-  }, [department, team, employee, eventTypes, sortKey, sortOrder, dateFrom, dateTo, page, rowsPerPage]);
+  }, [department, team, employee, eventTypes, sortKey, sortOrder, dateFrom, dateTo, page, rowsPerPage, refreshFlag]);
 
   // 필터/정렬/기간 바뀌면 페이지/캐시 리셋
   useEffect(() => {
@@ -394,7 +411,6 @@ const BehaviorLogs = () => {
     return `${date}\n${time}`;
   };
 
-  // ⚠️ 정렬은 서버에서 처리하게 하고, 클라이언트에서는 재정렬하지 않음 (페이지마다 따로 정렬되는 문제 방지)
   const filtered = useMemo(() => {
     const selectedSet = new Set(eventTypes.includes('all') ? EVENT_TYPES : eventTypes);
     return rawLogs.filter((l) => {
@@ -417,46 +433,29 @@ const BehaviorLogs = () => {
     });
   }, [rawLogs, department, team, employee, eventTypes, dateFrom, dateTo]);
 
-  // ↓ 여기서 클라 정렬 제거 (서버 정렬 신뢰)
   const viewRows = filtered;
 
   const openSort = (e) => setSortAnchor(e.currentTarget);
   const closeSort = () => setSortAnchor(null);
 
-  // ---------- 반응형 컬럼 구성 ----------
-  const columns = useMemo(() => {
-    // sm↓ : 시간, 유저, PC, 이벤트, 세부사항만
-    if (smDown) {
-      return [
-        { key: 'timestamp', label: '시간', width: '11ch', align: 'center' },
-        { key: 'user', label: '유저', width: 150 },
-        { key: 'pc_id', label: 'PC', width: 90 },
-        { key: 'event_type', label: '이벤트', width: 85 },
-        { key: 'detail', label: '세부사항', width: 'auto', align: 'center' },
-      ];
-    }
-    // md↓ : 부서는 숨기고 팀만 노출
-    if (mdDown) {
-      return [
-        { key: 'timestamp', label: '시간', width: '12ch', align: 'center' },
-        { key: 'team', label: '팀', width: 160 },
-        { key: 'user', label: '유저', width: 180 },
-        { key: 'pc_id', label: 'PC', width: 110 },
-        { key: 'event_type', label: '이벤트', width: 90 },
-        { key: 'detail', label: '세부사항', width: 'auto', align: 'center' },
-      ];
-    }
-    // lg↑ : 원래 풀 컬럼
-    return [
-      { key: 'timestamp', label: '시간', width: '13ch', align: 'center' },
-      { key: 'department', label: '부서', width: 180 },
-      { key: 'team', label: '팀', width: 180 },
-      { key: 'user', label: '유저', width: 180 },
-      { key: 'pc_id', label: 'PC', width: 120 },
-      { key: 'event_type', label: '이벤트', width: 95 },
-      { key: 'detail', label: '세부사항', width: 'auto', align: 'center' },
-    ];
-  }, [mdDown, smDown]);
+  const columns = useMemo(
+    () => [
+        { key: 'timestamp',  label: '시간',     width: '12%',  align: 'center' },
+        { key: 'department', label: '부서',     width: '14%', align: 'center' },
+        { key: 'team',       label: '팀',       width: '14%', align: 'center' },
+        { key: 'user',       label: '사용자 ID',   width: '12%', align: 'center' },
+        { key: 'pc_id',      label: 'PC ID',       width: '12%', align: 'center' },
+        { key: 'event_type', label: '이벤트',   width: '12%', align: 'center' },
+        { key: 'detail',     label: '세부사항',  width: '24%', align: 'center' },
+    ],
+    []
+  );
+
+  const toggleSortOrder = () => {
+    const next = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(next);
+    setSortPref((prev) => ({ ...prev, [sortKey]: next }));
+  };
 
   const colCount = columns.length;
   const showEmpty = !loading && viewRows.length === 0;
@@ -468,6 +467,7 @@ const BehaviorLogs = () => {
           'html, body, #root': { height: '100%' },
           html: { overflowX: 'hidden' },
           body: { overflowX: 'hidden' },
+          '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
         }}
       />
       <Box sx={{ display: 'flex', width: '100%', minWidth: 0 }}>
@@ -488,7 +488,7 @@ const BehaviorLogs = () => {
                 }}
                 fullWidth
                 sx={{ flex: 1, minWidth: 200 }}
-                renderInput={(params) => <TextField {...params} label="Department" placeholder="부서 검색" fullWidth />}
+                renderInput={(params) => <TextField {...params} label="부서" placeholder="부서 검색" fullWidth />}
                 clearOnEscape
               />
               <Autocomplete
@@ -502,7 +502,7 @@ const BehaviorLogs = () => {
                 }}
                 fullWidth
                 sx={{ flex: 1, minWidth: 200 }}
-                renderInput={(params) => <TextField {...params} label="Team" placeholder="팀 검색" fullWidth />}
+                renderInput={(params) => <TextField {...params} label="팀" placeholder="팀 검색" fullWidth />}
                 clearOnEscape
               />
               <Autocomplete
@@ -514,7 +514,7 @@ const BehaviorLogs = () => {
                 }}
                 fullWidth
                 sx={{ flex: 1, minWidth: 200 }}
-                renderInput={(params) => <TextField {...params} label="Employee" placeholder="직원 검색" fullWidth />}
+                renderInput={(params) => <TextField {...params} label="사용자 ID" placeholder="사용자 ID 검색" fullWidth />}
                 clearOnEscape
               />
 
@@ -557,7 +557,7 @@ const BehaviorLogs = () => {
                   </Box>
                 )}
                 <TextField
-                  label="Period"
+                  label="기간"
                   value={
                     rangeDigits
                       ? (() => {
@@ -619,6 +619,7 @@ const BehaviorLogs = () => {
                 size="small"
                 onClick={(e) => setSortAnchor(e.currentTarget)}
                 aria-label="정렬 옵션"
+                title="정렬"
                 sx={{
                   ml: 'auto',
                   border: '1.5px solid',
@@ -628,6 +629,31 @@ const BehaviorLogs = () => {
                 }}
               >
                 <SortIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton
+              size="small"
+              onClick={handleRefresh}
+              title="새로고침"
+              aria-label="새로고침"
+              disabled={loading}
+              sx={{
+                ml: 0.5,
+                border: '1.5px solid',
+                borderColor: 'divider',
+                color: 'text.black',
+                '& .MuiSvgIcon-root': {
+                    fontSize: 18,
+                    animation: loading ? 'spin .8s linear infinite' : 'none',
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 1,
+                    color: 'text.secondary',
+                    borderColor: 'divider',
+                  },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
               </IconButton>
             </Box>
 
@@ -643,7 +669,7 @@ const BehaviorLogs = () => {
               <Box p={1} minWidth={220}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" px={1} pb={1}>
                   <Typography variant="subtitle2">정렬 옵션</Typography>
-                  <IconButton size="small" onClick={() => setSortOrder((p) => (p === 'asc' ? 'desc' : 'asc'))}>
+                  <IconButton size="small" onClick={toggleSortOrder}>
                     {sortOrder === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />}
                   </IconButton>
                 </Stack>
@@ -654,22 +680,26 @@ const BehaviorLogs = () => {
                     ...(employee
                       ? []
                       : team
-                      ? [{ key: 'user', label: '유저명' }]
+                      ? [{ key: 'user', label: '사용자' }]
                       : department
                       ? [
                           { key: 'team', label: '팀명' },
-                          { key: 'user', label: '유저명' },
+                          { key: 'user', label: '사용자' },
                         ]
                       : [
                           { key: 'department', label: '부서명' },
                           { key: 'team', label: '팀명' },
-                          { key: 'user', label: '유저명' },
+                          { key: 'user', label: '사용자' },
                         ]),
                   ].map((opt) => (
                     <ListItemButton
                       key={opt.key}
                       selected={sortKey === opt.key}
-                      onClick={() => { setSortKey(opt.key); setSortAnchor(null); }}
+                      onClick={() => {
+                        setSortKey(opt.key);
+                        setSortOrder(sortPref[opt.key] ?? (opt.key === 'time' ? 'desc' : 'asc'));
+                        setSortAnchor(null);
+                    }}
                     >
                       <ListItemText primary={opt.label} />
                     </ListItemButton>
@@ -681,7 +711,7 @@ const BehaviorLogs = () => {
             <Divider sx={{ my: 1 }} />
             <Box sx={{ px: 1, py: 0.75 }}>
               <Stack direction="row" alignItems="center" spacing={1.25} sx={{ flexWrap: 'wrap' }}>
-                <Typography variant="subtitle2" minWidth={88} textAlign="center">Event Type:</Typography>
+                <Typography variant="subtitle2" minWidth={88} textAlign="center">이벤트 타입:</Typography>
                 <EventTypeSelector
                   value={eventTypes}
                   onChange={(v) => { setEventTypes(v); setPage(0); }}
@@ -807,7 +837,7 @@ const BehaviorLogs = () => {
                           if (key === 'event_type')  return <TableCell key={key}>{row.event_type}</TableCell>;
                           if (key === 'detail') {
                             return (
-                              <TableCell key={key} align="center" sx={{ position: 'relative', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <TableCell key={key} align="center" sx={{ position: 'relative', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: { xs: 320, md: 460, lg: 520 }, }}>
                                 <DetailCell row={row} />
                               </TableCell>
                             );
