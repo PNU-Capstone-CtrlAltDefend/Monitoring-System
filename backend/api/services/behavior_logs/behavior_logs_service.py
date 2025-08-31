@@ -207,7 +207,7 @@ def list_behavior_facets_for_org(
 
     # 직원 (선택된 부서/팀 범위 반영)
     eq = (
-        db.query(Employees.employee_name.label("name"))
+        db.query(Employees.employee_id.label("eid"))
           .join(Teams, Teams.team_id == Employees.team_id)
           .join(Teams.department)
           .filter(Employees.employee_id.in_(emp_ids_subq))
@@ -216,7 +216,7 @@ def list_behavior_facets_for_org(
         eq = eq.filter(Departments.department_name == department)
     if team:
         eq = eq.filter(Teams.team_name == team)
-    employees = [r.name for r in eq.distinct().order_by(Employees.employee_name.asc()).all() if r.name]
+    employees = [r.eid for r in eq.distinct().order_by(Employees.employee_id.asc()).all() if r.eid]
 
     out = {"departments": departments, "teams": teams, "employees": employees}
     _fset(fkey, out)
@@ -290,7 +290,7 @@ def list_behavior_logs_for_org(
         if team:
             emp_filters.append(Teams.team_name == team)
         if user:
-            emp_filters.append(Employees.employee_name == user)
+            emp_filters.append(Employees.employee_id == user)
         id_q = id_q.filter(exists().where(and_(*emp_filters)))
 
     # ---- 정렬 컬럼 결정 & 조인(정렬만을 위한 outerjoin) ----
@@ -303,7 +303,7 @@ def list_behavior_logs_for_org(
     elif sort_by == "team":
         order_col = Teams.team_name
     elif sort_by == "user":
-        order_col = Employees.employee_name
+        order_col = Employees.employee_id
     else:  # "time"
         order_col = Behavior_logs.timestamp
 
@@ -394,7 +394,7 @@ def list_behavior_logs_for_org(
               selectinload(Behavior_logs.device_log).load_only(Device_logs.event_id, Device_logs.activity),
               selectinload(Behavior_logs.logon_log).load_only(Logon_logs.event_id, Logon_logs.activity),
               selectinload(Behavior_logs.file_log).load_only(File_logs.event_id, File_logs.filename),
-              selectinload(Behavior_logs.employee).load_only(Employees.employee_id, Employees.employee_name)
+              selectinload(Behavior_logs.employee).load_only(Employees.employee_id)
                   .selectinload(Employees.team).load_only(Teams.team_id, Teams.team_name)
                   .selectinload(Teams.department).load_only(Departments.department_id, Departments.department_name),
           )
@@ -406,7 +406,7 @@ def list_behavior_logs_for_org(
     if team:
         q = q.filter(Teams.team_name == team)
     if user:
-        q = q.filter(Employees.employee_name == user)
+        q = q.filter(Employees.employee_id == user)
 
     # 상세에서도 같은 정렬(안정화)
     if sort_by == "department":
@@ -414,7 +414,7 @@ def list_behavior_logs_for_org(
     elif sort_by == "team":
         order2 = Teams.team_name
     elif sort_by == "user":
-        order2 = Employees.employee_name
+        order2 = Employees.employee_id
     else:
         order2 = Behavior_logs.timestamp
 
@@ -431,7 +431,7 @@ def list_behavior_logs_for_org(
 
         department_name = getattr(dept_obj, "department_name", None)
         team_name = getattr(team_obj, "team_name", None)
-        user_display = getattr(emp, "employee_name", None) or bl.employee_id
+        user_display = bl.employee_id
 
         http = getattr(bl, "http_log", None)
         email = getattr(bl, "email_log", None)
