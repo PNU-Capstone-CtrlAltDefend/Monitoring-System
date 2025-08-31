@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 
 from model.database import get_db
-from model.behavior_log.crud import get_behavior_logs_by_employee_id
+from model.behavior_log.crud import get_behavior_logs_by_employee_id, get_monthly_event_type_counts
 from model.security_manager.crud import get_security_manager_by_manager_id_and_org_id
 
 from services.behavior_logs.behavior_logs_service import (
@@ -109,6 +109,20 @@ async def get_user_behavior_logs(
 ):
     try:
         result =  get_behavior_logs_by_employee_id(db, employee_id=employee_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get("/behavior-log/monthly-type-counts")
+def monthly_behavior_log_type_counts(
+    db: Annotated[Session, Depends(get_db)]
+):
+    """
+    월별로, event_type별 로그 개수를 집계한 결과를 반환합니다.
+    """
+    try:
+        result = get_monthly_event_type_counts(db)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

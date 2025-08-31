@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 from datetime import datetime   
 
-from model.pc.crud import get_logon_pc_percent_by_organization_id, get_pcs_status_by_organization_id
+from model.pc.crud import get_logon_pc_percent_by_organization_id, get_pcs_status_by_organization_id, get_logon_pc_count_by_organization_id,get_total_pc_count_by_organization_id
 
 router = APIRouter(
     prefix='/pcs',
@@ -36,6 +36,8 @@ def get_pc_logon_percent(
     """
     try:
         logon_percent = get_logon_pc_percent_by_organization_id(db, organization_id)
-        return {"logon_percent": logon_percent}
+        logon_pc_count = get_logon_pc_count_by_organization_id(db, organization_id)
+        logout_pc_count = get_total_pc_count_by_organization_id(db, organization_id) - logon_pc_count
+        return {"logon_percent": logon_percent, "logon_pc_count": logon_pc_count, "logout_pc_count": logout_pc_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

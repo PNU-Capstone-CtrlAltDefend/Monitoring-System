@@ -7,6 +7,8 @@ from datetime import datetime
 
 from services.network_controller.pc_access_control_service import NetworkAccessController
 from model.pc.crud import set_pc_access_flag_by_id
+from model.blocking_history import crud as blocking_history_crud    
+from uuid import UUID
 
 router = APIRouter(
     prefix='/network_access_control',
@@ -32,5 +34,20 @@ def control_pc_network(
         
         set_pc_access_flag_by_id(db, pc_id, access_flag)
         return {"message": "제어 성공"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get('/{organization_id}/blocking-network-histories')
+def get_block_network_histories(
+    organization_id: str,
+    db: Annotated[Session, Depends(get_db)]
+):
+    """
+    특정 조직의 네트워크 차단 이력을 조회합니다.
+    """
+    try:
+        histories = blocking_history_crud.get_histories_by_oid(db, UUID(organization_id))
+        return {"results": histories}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,12 +1,13 @@
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-
 from datetime import datetime
-
 from model.behavior_log.models import Behavior_logs, Http_logs, Email_logs, Device_logs, Logon_logs, File_logs
 from model.behavior_log.schemas import BehaviorLogCreate, HttpLogCreate, EmailLogCreate, DeviceLogCreate, LogonLogCreate, FileLogCreate
 from typing import Optional , List, Tuple, Iterable
 
+from sqlalchemy import extract
 def create_behavior_log(db: Session, log_data: BehaviorLogCreate) -> Behavior_logs:
     # 1. 공통 로그 저장
     base_log = Behavior_logs(
@@ -85,3 +86,26 @@ def get_device_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Devi
 
 def get_file_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[File_logs]:
     return db.query(File_logs).filter(File_logs.event_id.in_(event_ids)).all()
+
+def get_monthly_event_type_counts(db: Session):
+    """
+    월별 event_type별 로그 개수 집계
+    반환: [{month: '2010-01', event_type: 'http', count: 123}, ...]
+    """
+    result = db.query(
+        func.to_char(Behavior_logs.timestamp, 'YYYY-MM').label('month'),
+        Behavior_logs.event_type,
+        func.count().label('count')
+    ).group_by(
+        func.to_char(Behavior_logs.timestamp, 'YYYY-MM'),
+        Behavior_logs.event_type
+    ).order_by(
+        func.to_char(Behavior_logs.timestamp, 'YYYY-MM')
+    ).all()
+    return [
+        {
+            'month': r.month,
+            'event_type': r.event_type,
+            'count': r.count
+        } for r in result
+    ]

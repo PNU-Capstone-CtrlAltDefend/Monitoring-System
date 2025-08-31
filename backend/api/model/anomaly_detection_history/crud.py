@@ -28,3 +28,26 @@ def get_anomaly_detection_histories(db: Session, organization_id: uuid.UUID):
     return db.query(models.AnomalyDetectionHistories).filter(
         models.AnomalyDetectionHistories.organization_id == organization_id
     ).all()
+
+import json
+
+def get_anomaly_user_count_per_history(db: Session, organization_id: uuid.UUID):
+    histories = db.query(models.AnomalyDetectionHistories).filter(
+        models.AnomalyDetectionHistories.organization_id == organization_id
+    ).all()
+    result = []
+    for history in histories:
+        try:
+            res_dict = json.loads(history.results)
+        except Exception:
+            res_dict = {}
+        anomaly_count = sum(1 for v in res_dict.values() if isinstance(v, dict) and v.get('p_anomaly', 0) > 0.5)
+        start_str = history.start_date.strftime('%Y-%m-%d') if history.start_date else ''
+        end_str = history.end_date.strftime('%Y-%m-%d') if history.end_date else ''
+        result.append({
+            'history_id': str(history.anomaly_detection_history_id),
+            'week': f'{start_str} - {end_str}',
+            'anomaly_user_count': anomaly_count
+        })
+    return result
+

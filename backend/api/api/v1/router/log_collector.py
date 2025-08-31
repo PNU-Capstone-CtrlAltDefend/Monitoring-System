@@ -133,7 +133,7 @@ async def post_behavior_log(
             # 이벤트 타입이 logon일 시, 로그온 처리를 위한 클래스 호출
             if log_data.event_type == "logon":
                 logonprocessor = LogonProcessor(db, log_data)
-                logonprocessor.run()
+                await logonprocessor.run()
                 
         return {"msg": "로그가 성공적으로 저장되었습니다.", "count": len(event_ids), "event_ids": event_ids}
 

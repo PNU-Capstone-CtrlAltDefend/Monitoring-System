@@ -64,6 +64,27 @@ def get_logon_pc_percent_by_organization_id(db:Session, organization_id: uuid.UU
     ).count()
     return (logged_on_pcs / total_pcs) * 100.0
 
+def get_logon_pc_count_by_organization_id(db: Session, organization_id: uuid.UUID) -> int:
+    """
+    해당 조직에서 현재 로그인 상태(ON)인 PC의 수를 반환
+    """
+    return db.query(Pcs).filter(
+        Pcs.organization_id == organization_id,
+        Pcs.current_state == LogonState.ON
+    ).count()
+
+def get_total_pc_count_by_organization_id(db: Session, organization_id: uuid.UUID) -> int:
+    """
+    해당 조직의 전체 PC 숫자를 반환
+    """
+    return db.query(Pcs).filter(Pcs.organization_id == organization_id).count()
+
+def get_organization_id_by_pc_id(db:Session, pc_id: str) -> uuid.UUID | None:
+    pc = get_pc_by_id(db, pc_id)
+    if not pc:
+        return None
+    return pc.organization_id   
+
 def get_pcs_status_by_organization_id(db: Session, organization_id: uuid.UUID) -> list[dict]:
     # present_user_id가 NULL이 아니면 1, 아니면 0
     is_active = case(

@@ -14,33 +14,31 @@ import {
 import { format, parseISO } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate, useParams } from 'react-router-dom';
+import {get_anomaly_count_by_week} from '../../../api/dashboard';
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const MaliciousDetectionsOverTimeChartMock = () => {
     const theme = useTheme();
     const navigate = useNavigate();
-    const { pid: iid } = useParams();
+    const { oid } = useParams();
 
-    // ✅ 가짜 데이터
-    const detectionTrend = [
-        { date: '2025-08-01', detection_count: 3, incident_group_id: 'grp-001' },
-        { date: '2025-08-02', detection_count: 0 },
-        { date: '2025-08-03', detection_count: 5, incident_group_id: 'grp-002' },
-        { date: '2025-08-04', detection_count: 2 },
-        { date: '2025-08-05', detection_count: 4, incident_group_id: 'grp-003' }
-    ];
+    const [trendData, setTrendData] = React.useState([]);
+    React.useEffect(() => {
+        async function fetchData() {
+            try {
+                const res = await get_anomaly_count_by_week(oid);
+                setTrendData(Array.isArray(res) ? res : []);
+            } catch (e) {
+                setTrendData([]);
+            }
+        }
+        fetchData();
+    }, [oid]);
 
-    const labels = detectionTrend.map(item =>
-        item.date ? format(parseISO(item.date), 'MM/dd') : ''
-    );
-
-    const dataPoints = detectionTrend.map(item =>
-        Number.isFinite(item?.detection_count) ? Number(item.detection_count) : null
-    );
-
-    const dates = detectionTrend.map(item => item.date || null);
-    const groupIds = detectionTrend.map(item => item.incident_group_id || null);
+    const labels = trendData.map(item => item.week || '');
+    const dataPoints = trendData.map(item => Number.isFinite(item?.anomaly_user_count) ? Number(item.anomaly_user_count) : null);
+    const historyIds = trendData.map(item => item.history_id || null);
 
     const chartData = {
         labels,
@@ -71,12 +69,12 @@ const MaliciousDetectionsOverTimeChartMock = () => {
                     label: (context) => {
                         const index = context.dataIndex;
                         const value = context.raw;
-                        const date = dates[index];
-                        const gid = groupIds[index];
+                        const week = labels[index];
+                        const hid = historyIds[index];
                         return [
                             `Detections: ${value ?? 0}`,
-                            date ? `Date: ${date}` : null,
-                            gid ? `Group: ${gid}` : null
+                            week ? `Week: ${week}` : null,
+                            hid ? `History ID: ${hid}` : null
                         ].filter(Boolean);
                     }
                 }
@@ -85,12 +83,9 @@ const MaliciousDetectionsOverTimeChartMock = () => {
         onClick: (event, elements) => {
             if (elements.length > 0) {
                 const index = elements[0].index;
-                const date = dates[index];
-                const gid = groupIds[index];
-                if (gid) {
-                    navigate(`/RMF/${iid}/Incidents/group/${gid}`);
-                } else if (date) {
-                    navigate(`/RMF/${iid}/Incidents?date=${encodeURIComponent(date)}`);
+                const hid = historyIds[index];
+                if (hid) {
+                    navigate(`/RMF/${oid}/Incidents/history/${hid}`);
                 }
             }
         },
@@ -100,7 +95,7 @@ const MaliciousDetectionsOverTimeChartMock = () => {
                 title: { display: true, text: 'Detections' },
                 ticks: { precision: 0, stepSize: 1 }
             },
-            x: { title: { display: true, text: 'Date' } }
+            x: { title: { display: true, text: 'Week' } }
         }
     };
 
