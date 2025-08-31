@@ -22,6 +22,10 @@ def get_security_manager_by_manager_id_and_org_id(db: Session, manager_id: str, 
 def get_security_manager_by_email(db: Session, email: str) -> Optional[models.Security_managers]:
     return db.query(models.Security_managers).filter(models.Security_managers.email == email).first()
 
+def get_security_manager_emails_by_oid(db: Session, organization_id: str) -> List[str]:
+    managers = db.query(models.Security_managers).filter(models.Security_managers.organization_id == organization_id).all()
+    return [manager.email for manager in managers]
+
 def create_security_manager(db: Session, security_manager: schemas.UserCreate) -> Optional[schemas.User]:
     db_security_manager = models.Security_managers(
         manager_id=security_manager.manager_id,

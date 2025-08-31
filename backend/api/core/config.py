@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     API_STR: str = "/api/v1"
     PROWLER_API_STR: str = "/api/prowler"
 
-        
+    #프론트엔드 URL (CORS 허용을 위해)
+    FRONTEND_URL: str = os.getenv('FRONTEND_URL', 'http://localhost:3000')
     # Database configuration
     # 데이터베이스 설정
     DB_HOST: str = os.getenv('DB_HOST', 'localhost')
@@ -47,4 +48,10 @@ class Settings(BaseSettings):
     ADDITIONAL_ORGANIZATIONS_NAME: str = 'Samsung Electronics'
     ADDITIONAL_ORGANIZATIONS_AUTH_CODE: str = 'samsung123456789'  # 16 characters long
     ADDITIONAL_ORGANIZATIONS_DESCRIPTION: str = '삼성전자는 글로벌 전자제품 및 반도체 기업으로, 혁신적인 기술과 제품을 통해 세계 시장에서 선도적인 위치를 차지하고 있습니다.'
+
+    # 관리자 계정에 이메일을 전송하기 위한 계정 
+    EMAIL_SENDER: str = 'gbhuni@gmail.com'
+    EMAIL_SENDER_PASSWORD: str = 'ldss ycha hwvz wvlg'
+    
+
 settings = Settings()
