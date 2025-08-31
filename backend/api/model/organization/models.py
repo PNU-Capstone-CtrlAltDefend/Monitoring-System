@@ -26,3 +26,4 @@ class Organizations(Base):
     pcs = relationship("Pcs", back_populates="organization")
     routers = relationship("Routers", back_populates="organization")
     anomaly_detection_histories = relationship("AnomalyDetectionHistories", back_populates="organization")
+    blocking_history = relationship("BlockingHistory", back_populates="organization")

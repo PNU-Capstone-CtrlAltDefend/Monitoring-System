@@ -43,6 +43,9 @@ from model.behavior_log import schemas as behavior_logs_schemas
 from model.behavior_log.init_behavior_log import BehaviorLogInserter
 
 from model.anomaly_detection_history import models as AnomalyDetectionHistory_models
+from model.anomaly_detection_history import crud as anomaly_detection_history_crud  
+
+from model.blocking_history import models as BlockingHistory_models 
 from .util import getuserlist, ym_to_date
 
 def init_database(engine: engine, db: Annotated[Session, Depends(get_db)]):

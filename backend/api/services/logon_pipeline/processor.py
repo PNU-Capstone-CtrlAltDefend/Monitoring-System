@@ -5,11 +5,13 @@ from model.pc.models import LogonState
 from anyio import from_thread
 from model.employee.crud import get_anomaly_flag_by_employee_id
 
+from model.blocking_history.crud import create_blocking_history
+from datetime import datetime
 from services.network_controller.pc_access_control_service import NetworkAccessController
 
 from api.v1.websocket.alerts import manager as ws_manager
 import anyio
-
+from uuid import UUID
 class LogonProcessor:
     """
     로그온/오프 로그를 받아, 해당하는 PC의 상태를 업데이트 하고 
@@ -18,7 +20,7 @@ class LogonProcessor:
     def __init__(self, db: Session, log_data):
         self.db=db
         self.log_data=log_data
-    
+        self.oid = "9d1b2dcb-662e-4185-9007-d7e23d5abbf7"
     async def run(self):
         print("LogonProcessor called with log_data:", self.log_data)
         try: 
@@ -70,7 +72,18 @@ class LogonProcessor:
         result = NetworkAccessController(self.db, self.log_data.pc_id, access_flag=False).run()
         if (result):
             print(f"네트워크 차단이 성공적으로 완료되었습니다.: {self.log_data.pc_id}")
-        # 2. 관리자 이메일 전송
+        # 2. 차단 이력 생성
+        create_blocking_history(
+            self.db,
+            organization_id=self.oid,
+            pc_id=self.log_data.pc_id,
+            employee_id=self.log_data.employee_id,
+            logon_time=self.log_data.timestamp,
+            blocking_time=datetime.now()
+        )
+        # 3. 관리자 알림
         await self._anomaly_user_logon_event_alarm()
-        # 3. 관리자 알림 
+        # 4. 관리자 이메일 전송 
+
+        
         pass

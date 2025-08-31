@@ -24,3 +24,4 @@ class Employees(Base):
     team = relationship("Teams", back_populates="employee")
     pc = relationship("Pcs", back_populates="present_user", uselist=False)
     behavior_logs = relationship("Behavior_logs", back_populates="employee")
+    blocking_history = relationship("BlockingHistory", back_populates="employee")
