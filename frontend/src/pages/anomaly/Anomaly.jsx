@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, Table, TableBody, TableCell, TableHead, TableRow, Modal, Typography, CircularProgress, IconButton, TablePagination } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from 'chart.js'; // Chart.js의 Tooltip을 별칭으로 변경
 import { fetchAnomalyDetection, fetchAnomalyDetectionDetails, fetchAnomalyDetectionHistories } from '../../services/AnomalyDetection';
 import { useParams } from 'react-router-dom';
 import CommonCard from '../../components/common/card/CommonCard';
 import { useTheme } from '@emotion/react';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Tooltip from '@mui/material/Tooltip'; // MUI의 Tooltip을 유지
+import RefreshIcon from '@mui/icons-material/Refresh';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 const Anomaly = () => {
   const { oid } = useParams();
@@ -21,10 +24,25 @@ const Anomaly = () => {
   const [userDetails, setUserDetails] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage] = useState(6);
   const [history, setHistory] = useState([]);
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+
+  const scenarioInfo = {
+    1: {
+      title: 'Class 1',
+      description: ' 내부 정보 외부 유출: 퇴사를 앞두고 민감 정보를 외부에 대량 유출하는 행위'
+    },
+    2: {
+      title: 'Class 2',
+      description: '핵심 자산 절취: 이직 등을 위해 회사의 핵심 기술, 고객 정보 등을 훔치는 행위'
+    },
+    3: {
+      title: 'Class 3',
+      description: '시스템 파괴 및 사보타주: 악성코드나 계정 탈취로 시스템을 파괴하거나 업무를 마비시키는 행위'
+    }
+  };
 
   const handleFetch = async () => {
     setLoading(true);
@@ -63,21 +81,20 @@ const Anomaly = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  // Fetch anomaly detection histories
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchAnomalyDetectionHistories(oid);
+      setHistory(data.results);
+    } catch (e) {
+      alert('탐지 히스토리를 가져오는 데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Fetch anomaly detection histories
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const data = await fetchAnomalyDetectionHistories(oid);
-        setHistory(data.results);
-      } catch (e) {
-        alert('탐지 히스토리를 가져오는 데 실패했습니다.');
-      }
-    };
     fetchHistory();
   }, [oid]);
 
@@ -100,74 +117,115 @@ const Anomaly = () => {
             type="date"
             InputLabelProps={{ shrink: true }}
             value={startDate}
-            onChange={e => setStartDate(e.target.value)}
+            onChange={(e) => setStartDate(e.target.value)}
           />
           <TextField
             label="끝 날짜"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={endDate}
-            onChange={e => setEndDate(e.target.value)}
+            onChange={(e) => setEndDate(e.target.value)}
           />
-          <Button
-            variant="contained"
-            onClick={handleFetch}
-            disabled={loading}
-          >
-            {loading ? '탐지 중...' : '탐지 수행'}
-          </Button>
-          {loading && <CircularProgress size={24} />}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              variant="contained"
+              onClick={handleFetch}
+              disabled={loading}
+            >
+              {loading ? '탐지 중...' : '탐지 수행'}
+            </Button>
+            {loading && (
+              <>
+                <CircularProgress size={24} />
+                <Typography variant="body2" color="text.secondary">
+                  3~4분 정도 소요됩니다
+                </Typography>
+              </>
+            )}
+          </Box>
         </Box>
 
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              '& th': {
+                backgroundColor: 'background.default', // 헤드의 백그라운드 컬러를 검은색으로 설정
+                color: theme.palette.text.white, // 텍스트 색상을 흰색으로 설정
+                fontWeight: 'bold', // 텍스트를 볼드 처리
+                textAlign: 'center', // 헤드 텍스트 가운데 정렬
+              },
+            }}
+          >
             <TableRow>
               <TableCell>악성 의심 사용자 ID</TableCell>
-              <TableCell>예측 클래스</TableCell>
+              <TableCell>
+                <Box display="flex" alignItems="center" justifyContent="center"> {/* 가운데 정렬 */}
+                  예측 클래스
+                  <Tooltip
+                    title={
+                      <Box>
+                        {Object.entries(scenarioInfo).map(([key, info]) => (
+                          <Box key={key} mb={1}>
+                            <Typography variant="subtitle2" fontWeight="bold">{info.title}</Typography>
+                            <Typography variant="body2">{info.description}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    }
+                    arrow
+                  >
+                    <InfoOutlinedIcon sx={{ ml: 1, cursor: 'pointer', color: theme.palette.text.white }} />
+                  </Tooltip>
+                </Box>
+              </TableCell>
               <TableCell>이상 확률</TableCell>
               <TableCell>클래스별 확률</TableCell>
-              <TableCell>행위 시나리오</TableCell>
             </TableRow>
           </TableHead>
           <TableBody
             sx={{
-              '& td': { color: theme.palette.text.black },
+              '& td': { color: theme.palette.text.black, textAlign: 'center' }, // 모든 값 가운데 정렬
             }}
           >
-            {Object.entries(result).map(([uid, info]) => (
-              <TableRow key={uid}>
-                <TableCell>
-                  <Typography
-                    sx={{ cursor: 'pointer', color: 'blue' }}
-                    onClick={() => handleUserClick(uid)}
-                  >
-                    {uid}
-                  </Typography>
-                </TableCell>
-                <TableCell>{info.pred_class}</TableCell>
-                <TableCell>{(info.p_anomaly * 100).toFixed(1)}%</TableCell>
-                <TableCell>
-                  <Pie
-                    data={{
-                      labels: Object.keys(info.proba),
-                      datasets: [{
-                        data: Object.values(info.proba),
-                        backgroundColor: ['#1976d2', '#ef4444', '#fbbf24', '#22c55e'],
-                      }]
-                    }}
-                    options={{
-                      plugins: { legend: { display: true } },
-                      responsive: false,
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  {info.pred_class === 1 && '퇴사 직전, 야근하며 이동식 드라이브를 사용하고 wikileaks.org에 데이터를 업로드한 사용자'}
-                  {info.pred_class === 2 && '경쟁사에 취업을 시도하며 퇴사 직전 데이터 유출을 시도한 사용자'}
-                  {info.pred_class === 3 && '키로거를 설치하고 상사의 계정으로 조직에 혼란을 초래한 시스템 관리자'}
+            {Object.entries(result).length > 0 ? (
+              Object.entries(result).map(([uid, info]) => (
+                <TableRow key={uid}>
+                  <TableCell align="left">
+                    <Typography
+                      sx={{ cursor: 'pointer', color: 'blue' }}
+                      onClick={() => handleUserClick(uid)}
+                    >
+                      {uid}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{info.pred_class}</TableCell>
+                  <TableCell>{(info.p_anomaly * 100).toFixed(1)}%</TableCell>
+                  <TableCell>
+                    <Box display="flex" justifyContent="center"> {/* 파이차트 가운데 정렬 */}
+                      <Pie
+                        data={{
+                          labels: Object.keys(info.proba),
+                          datasets: [{
+                            data: Object.values(info.proba),
+                            backgroundColor: ['#D9D9D9', '#FFB703', '#FB8500', '#D00000'],
+                          }]
+                        }}
+                        options={{
+                          plugins: { legend: { display: true } },
+                          responsive: false,
+                        }}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} sx={{ textAlign: 'center', color: theme.palette.text.secondary }}>
+                  조회된 악성 사용자가 없습니다. 다른 날짜 범위를 선택해보세요.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CommonCard>
@@ -202,7 +260,15 @@ const Anomaly = () => {
           {userDetails.length > 0 ? (
             <>
               <Table>
-                <TableHead>
+                <TableHead
+                  sx={{
+                    '& th': {
+                      backgroundColor: 'background.default', // 헤드의 백그라운드 컬러를 검은색으로 설정
+                      color: theme.palette.text.white, // 텍스트 색상을 흰색으로 설정
+                      fontWeight: 'bold', // 텍스트를 볼드 처리
+                    },
+                  }}
+                >
                   <TableRow>
                     <TableCell >이벤트 ID</TableCell>
                     <TableCell >PC</TableCell>
@@ -222,25 +288,55 @@ const Anomaly = () => {
                 </TableBody>
               </Table>
               <TablePagination
-                rowsPerPageOptions={[5, 10, 20]}
+                rowsPerPageOptions={[]} // 한 번에 볼 수 있는 row 수 선택 옵션 제거
                 component="div"
                 count={userDetails.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  '.MuiTablePagination-toolbar': {
+                    backgroundColor: 'background.default',
+                    color: theme.palette.text.white, // 페이지 안내 문구 색상 설정
+                  },
+                  '.MuiTablePagination-actions': {
+                    color: theme.palette.text.white, // 버튼 색상 설정
+                  },
+                }}
               />
             </>
           ) : (
-            <Typography>데이터를 불러올 수 없습니다.</Typography>
+            <Typography sx={{ color: theme.palette.text.black }}>데이터를 불러올 수 없습니다.</Typography>
           )}
         </Box>
       </Modal>
+      
+      <Box mt={4} />   {/* 두 컴포넌트 사이 간격 추가 */}
 
       {/* 이상 탐지 결과 조회 카드 */}
       <CommonCard title="이상 탐지 결과 조회">
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">이상 탐지 결과 조회</Typography>
+          <RefreshIcon
+            onClick={fetchHistory}
+            style={{
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '20px', // 아이콘 크기 줄이기
+              color: loading ? '#a1a1aa' : '#000000', // 로딩 중일 때는 회색, 기본은 검정색
+              pointerEvents: loading ? 'none' : 'auto', // 로딩 중일 때 클릭 비활성화
+            }}
+          />
+        </Box>
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              '& th': {
+                backgroundColor: 'background.default', // 헤드의 백그라운드 컬러를 검은색으로 설정
+                color: theme.palette.text.white, // 텍스트 색상을 흰색으로 설정
+                fontWeight: 'bold', // 텍스트를 볼드 처리
+              },
+            }}
+          >
             <TableRow>
               <TableCell>스캔 ID</TableCell>
               <TableCell>스캔 시각</TableCell>
@@ -251,7 +347,8 @@ const Anomaly = () => {
           <TableBody
             sx={{
               '& td': { color: theme.palette.text.black },
-            }}>
+            }}
+          >
             {history.map((item) => (
               <TableRow key={item.anomaly_detection_history_id}>
                 <TableCell>{item.anomaly_detection_history_id}</TableCell>
@@ -268,7 +365,7 @@ const Anomaly = () => {
         </Table>
       </CommonCard>
 
-      {/* Modal for "이상 탐지 결과 조회" details */}
+      {/* Modal for "이상 탐지 결과 조회" 세부사항 모달 */}
       <Modal open={historyModalOpen} onClose={handleCloseHistoryModal}>
         <Box
           p={4}
@@ -295,33 +392,64 @@ const Anomaly = () => {
             <CloseIcon />
           </IconButton>
           <Typography variant="h6" fontWeight="bold" mb={2}>세부 사항</Typography>
-          {selectedHistory ? (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>사용자 ID</TableCell>
-                  <TableCell>예측 클래스</TableCell>
-                  <TableCell>이상 확률</TableCell>
-                  <TableCell>클래스별 확률</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.entries(JSON.parse(selectedHistory.results)).map(([uid, info]) => (
-                  <TableRow key={uid}>
-                    <TableCell sx={{ color: theme.palette.text.black }}>{uid}</TableCell>
-                    <TableCell sx={{ color: theme.palette.text.black }}>{info.pred_class}</TableCell>
-                    <TableCell sx={{ color: theme.palette.text.black }}>{(info.p_anomaly * 100).toFixed(1)}%</TableCell>
-                    <TableCell sx={{ color: theme.palette.text.black }}>
-                      {Object.entries(info.proba).map(([classId, prob]) => (
-                        <Typography key={classId}>{`Class ${classId}: ${(prob * 100).toFixed(1)}%`}</Typography>
-                      ))}
-                    </TableCell>
+          {selectedHistory && Object.keys(JSON.parse(selectedHistory.results)).length > 0 ? (
+            <>
+              <Table>
+                <TableHead
+                  sx={{
+                    '& th': {
+                      backgroundColor: 'background.default', 
+                      color: theme.palette.text.white, 
+                      fontWeight: 'bold', 
+                    },
+                  }}
+                >
+                  <TableRow>
+                    <TableCell>사용자 ID</TableCell>
+                    <TableCell>예측 클래스</TableCell>
+                    <TableCell>이상 확률</TableCell>
+                    <TableCell>클래스별 확률</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {Object.entries(JSON.parse(selectedHistory.results))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map(([uid, info]) => (
+                      <TableRow key={uid}>
+                        <TableCell sx={{ color: theme.palette.text.black }}>{uid}</TableCell>
+                        <TableCell sx={{ color: theme.palette.text.black }}>{info.pred_class}</TableCell>
+                        <TableCell sx={{ color: theme.palette.text.black }}>{(info.p_anomaly * 100).toFixed(1)}%</TableCell>
+                        <TableCell sx={{ color: theme.palette.text.black }}>
+                          {Object.entries(info.proba).map(([classId, prob]) => (
+                            <Typography key={classId}>{`Class ${classId}: ${(prob * 100).toFixed(1)}%`}</Typography>
+                          ))}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                rowsPerPageOptions={[]} // 한 번에 볼 수 있는 row 수 선택 옵션 제거
+                component="div"
+                count={Object.keys(JSON.parse(selectedHistory.results)).length}
+                rowsPerPage={rowsPerPage} // 한 페이지에 표시할 행 수를 6으로 고정
+                page={page}
+                onPageChange={handleChangePage}
+                sx={{
+                  '.MuiTablePagination-toolbar': {
+                    backgroundColor: 'background.default',
+                    color: theme.palette.text.white, // 페이지 안내 문구 색상 설정
+                  },
+                  '.MuiTablePagination-actions': {
+                    color: theme.palette.text.white, // 버튼 색상 설정
+                  },
+                }}
+              />
+            </>
           ) : (
-            <Typography>데이터를 불러올 수 없습니다.</Typography>
+            <Typography sx={{ color: theme.palette.text.secondary, textAlign: 'center', mt: 2 }}>
+              조회된 탐지 결과가 없습니다. 다른 탐지 기록을 선택해보세요.
+            </Typography>
           )}
         </Box>
       </Modal>
