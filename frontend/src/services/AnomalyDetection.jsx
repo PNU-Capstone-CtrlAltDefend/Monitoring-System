@@ -32,3 +32,13 @@ export async function fetchAnomalyDetectionHistories(organizationId) {
   if (!response.ok) throw new Error('탐지 히스토리를 가져오는 데 실패했습니다.');
   return await response.json();
 }
+
+export async function fetchAnomalyEmployees(organizationId) {
+  const token = localStorage.getItem('access_token');
+  const url = `${API_URL}/anomalydetect/${organizationId}/anomaly_employees`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('이상 사용자 목록 데이터를 가져오는 데 실패했습니다.');
+  return await response.json();
+}
