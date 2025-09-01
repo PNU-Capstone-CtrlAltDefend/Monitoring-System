@@ -6,7 +6,11 @@ from sqlalchemy.orm import Session
 from typing import Annotated, Optional
 
 from model.database import get_db
-from model.behavior_log.crud import get_behavior_logs_by_employee_id, get_monthly_event_type_counts
+from model.behavior_log.crud import (
+    get_behavior_logs_by_employee_id,
+    get_monthly_event_type_counts,
+    get_weekly_event_type_counts,
+)
 from model.security_manager.crud import get_security_manager_by_manager_id_and_org_id
 
 from services.behavior_logs.behavior_logs_service import (
@@ -70,6 +74,7 @@ async def get_behavior_logs(
 
     return result
 
+
 @router.get("/behavior-logs/facets")
 async def get_behavior_log_facets(
     Authorize: Annotated[AuthJWT, Depends()],
@@ -102,27 +107,45 @@ async def get_behavior_log_facets(
         event_types=event_types,
     )
 
+
 @router.get("/behavior-log/user")
 async def get_user_behavior_logs(
     db: Annotated[Session, Depends(get_db)],
     employee_id: str
 ):
     try:
-        result =  get_behavior_logs_by_employee_id(db, employee_id=employee_id)
+        result = get_behavior_logs_by_employee_id(db, employee_id=employee_id)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @router.get("/behavior-log/monthly-type-counts")
-def monthly_behavior_log_type_counts(
-    db: Annotated[Session, Depends(get_db)]
+def monthly_or_weekly_type_counts(
+    month: Optional[str] = Query(default=None, description="YYYY-MM 또는 MM(1~12)"),
+    db: Session = Depends(get_db),
 ):
-    """
-    월별로, event_type별 로그 개수를 집계한 결과를 반환합니다.
-    """
-    try:
-        result = get_monthly_event_type_counts(db)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    if month is None:
+        return get_monthly_event_type_counts(db)
+
+    mraw = month.strip()
+    if not mraw or mraw.lower() == "nan":
+        raise HTTPException(status_code=400, detail="Invalid month format. Use YYYY-MM or MM.")
+
+    if "-" in mraw:
+        try:
+            _, m_str = mraw.split("-", 1)
+            month_i = int(m_str)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid month format. Use YYYY-MM or MM.")
+    else:
+        try:
+            month_i = int(mraw)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid month format. Use YYYY-MM or MM.")
+
+    if not (1 <= month_i <= 12):
+        raise HTTPException(status_code=400, detail="Month must be between 1 and 12.")
+
+    weeks, counts = get_weekly_event_type_counts(db, month_i)
+    return {"weeks": weeks, "counts": counts}

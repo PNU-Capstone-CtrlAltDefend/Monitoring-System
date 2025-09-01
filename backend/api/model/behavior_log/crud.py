@@ -87,25 +87,85 @@ def get_device_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[Devi
 def get_file_logs_by_event_ids(db: Session, event_ids: list[str]) -> list[File_logs]:
     return db.query(File_logs).filter(File_logs.event_id.in_(event_ids)).all()
 
-def get_monthly_event_type_counts(db: Session):
+def get_monthly_event_type_counts(db: Session, tz: str = 'Asia/Seoul'):
     """
     월별 event_type별 로그 개수 집계
     반환: [{month: '2010-01', event_type: 'http', count: 123}, ...]
     """
-    result = db.query(
-        func.to_char(Behavior_logs.timestamp, 'YYYY-MM').label('month'),
-        Behavior_logs.event_type,
-        func.count().label('count')
-    ).group_by(
-        func.to_char(Behavior_logs.timestamp, 'YYYY-MM'),
-        Behavior_logs.event_type
-    ).order_by(
-        func.to_char(Behavior_logs.timestamp, 'YYYY-MM')
-    ).all()
+    tz_ts   = func.timezone(tz, Behavior_logs.timestamp)
+    month_s = func.to_char(tz_ts, 'YYYY-MM')
+
+    result = (
+        db.query(
+            month_s.label('month'),
+            Behavior_logs.event_type,
+            func.count().label('count')
+        )
+        .group_by(month_s, Behavior_logs.event_type)
+        .order_by(month_s)
+        .all()
+    )
     return [
-        {
-            'month': r.month,
-            'event_type': r.event_type,
-            'count': r.count
-        } for r in result
+        {'month': r.month, 'event_type': r.event_type, 'count': r.count}
+        for r in result
     ]
+
+
+def get_weekly_event_type_counts(db: Session, month: int, tz: str = 'Asia/Seoul'):
+    """
+    주차별 각 유형 로그 집계
+    반환: (weeks:[1..N], counts:{logon:[...], email:[...], http:[...], device:[...], file:[...]})
+    """
+    tz_ts = func.timezone(tz, Behavior_logs.timestamp)
+
+    latest_year_subq = (
+        db.query(func.max(extract('year', tz_ts)))
+        .filter(extract('month', tz_ts) == month)
+        .scalar_subquery()
+    )
+
+    week_start = func.date_trunc('week', tz_ts)
+
+    subq = (
+        db.query(
+            week_start.label('week_start'),
+            Behavior_logs.event_type.label('event_type'),
+            func.count().label('cnt'),
+        )
+        .filter(
+            extract('month', tz_ts) == month,
+            extract('year', tz_ts) == latest_year_subq,
+            Behavior_logs.event_type.in_(('logon', 'email', 'http', 'device', 'file')),
+        )
+        .group_by('week_start', 'event_type')
+        .subquery()
+    )
+
+    rows = (
+        db.query(subq.c.week_start, subq.c.event_type, subq.c.cnt)
+        .order_by(subq.c.week_start, subq.c.event_type)
+        .all()
+    )
+
+    if not rows:
+        return [], {t: [] for t in ['logon', 'email', 'http', 'device', 'file']}
+
+    week_index_map, ordered = {}, []
+    for r in rows:
+        ws = r.week_start
+        if ws not in week_index_map:
+            week_index_map[ws] = len(ordered) + 1
+            ordered.append(ws)
+
+    maxw = len(ordered)
+    event_types = ['logon', 'email', 'http', 'device', 'file']
+    counts = {t: [0] * maxw for t in event_types}
+
+    for r in rows:
+        idx = week_index_map[r.week_start] - 1
+        t = (r.event_type or '').lower()
+        if t in counts:
+            counts[t][idx] = int(r.cnt)
+
+    weeks = list(range(1, maxw + 1))
+    return weeks, counts
