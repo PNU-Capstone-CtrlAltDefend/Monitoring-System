@@ -58,7 +58,7 @@ const PcsStatusTable = () => {
                     <TableCell>MAC 주소</TableCell>
                     <TableCell>상태</TableCell>
                     <TableCell>사용자</TableCell>
-                    <TableCell>접근 허용</TableCell>
+                    <TableCell>네트워크 접근</TableCell>
                     <TableCell>액션</TableCell>
                 </TableRow>
             </TableHead>

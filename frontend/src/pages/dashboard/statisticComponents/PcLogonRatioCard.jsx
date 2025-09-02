@@ -26,7 +26,9 @@ const PcLogonRatioCard = () => {
   }, [oid]);
 
   const ratio = useMemo(() => {
-    return Math.round((summary.logon_percent || 0) * 100);
+    return typeof summary.logon_percent === 'number'
+      ? summary.logon_percent.toFixed(2)
+      : '0.00';
   }, [summary]);
 
   const total = summary.logon_pc_count + summary.logout_pc_count;
