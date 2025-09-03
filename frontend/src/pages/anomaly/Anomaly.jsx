@@ -110,7 +110,7 @@ const Anomaly = () => {
 
   return (
     <Box p={4}>
-      <CommonCard title="악성 사용자 탐지">
+      <CommonCard title="이상 사용자 탐지">
         <Box mb={2} display="flex" gap={2} alignItems="center">
           <TextField
             label="시작 날짜"
@@ -157,7 +157,7 @@ const Anomaly = () => {
             }}
           >
             <TableRow>
-              <TableCell>악성 의심 사용자 ID</TableCell>
+              <TableCell>이상 사용자 ID</TableCell>
               <TableCell>
                 <Box display="flex" alignItems="center" justifyContent="center"> {/* 가운데 정렬 */}
                   예측 클래스
@@ -222,7 +222,7 @@ const Anomaly = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={4} sx={{ textAlign: 'center', color: theme.palette.text.secondary }}>
-                  조회된 악성 사용자가 없습니다. 다른 날짜 범위를 선택해보세요.
+                  조회된 이상 사용자가 없습니다. 다른 날짜 범위를 선택해보세요.
                 </TableCell>
               </TableRow>
             )}

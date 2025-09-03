@@ -9,6 +9,8 @@ from model.blocking_history.crud import create_blocking_history
 from datetime import datetime
 from services.network_controller.pc_access_control_service import NetworkAccessController
 
+from services.logon_pipeline.email_sender import EmailSender    
+
 from api.v1.websocket.alerts import manager as ws_manager
 import anyio
 from uuid import UUID
@@ -67,6 +69,8 @@ class LogonProcessor:
         }
         await ws_manager.broadcast(str(organization_id), payload)
 
+
+
     async def _handle_anomaly_logon(self):
         # 1. 네트워크 차단 요청 
         result = NetworkAccessController(self.db, self.log_data.pc_id, access_flag=False).run()
@@ -83,7 +87,8 @@ class LogonProcessor:
         )
         # 3. 관리자 알림
         await self._anomaly_user_logon_event_alarm()
-        # 4. 관리자 이메일 전송 
-
+        # 4. 관리자 이메일 전송
+        email_sender = EmailSender(self.db, self.log_data, self.oid)
+        await email_sender.run()
         
-        pass
+        return

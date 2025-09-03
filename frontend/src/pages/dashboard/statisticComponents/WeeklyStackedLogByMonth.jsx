@@ -14,41 +14,41 @@ const API_BASE = process.env.REACT_APP_API_URL;
 const EVENT_TYPES = ['logon', 'email', 'http', 'device', 'file'];
 
 async function fetchAvailableMonths() {
-    const res = await fetch(`${API_BASE}/behavior-log/monthly-type-counts`);
-    if (!res.ok) throw new Error('월별 유형 집계 조회 실패');
-    const rows = await res.json(); // [{month:"YYYY-MM", event_type, count}, ...]
-    const months = [...new Set((rows || []).map(r => r.month))];
-    months.sort();
-    return months;
-  }
+  const res = await fetch(`${API_BASE}/behavior-log/monthly-type-counts`);
+  if (!res.ok) throw new Error('월별 유형 집계 조회 실패');
+  const rows = await res.json(); // [{month:"YYYY-MM", event_type, count}, ...]
+  const months = [...new Set((rows || []).map(r => r.month))];
+  months.sort();
+  return months;
+}
 
 // 주차별 집계 API
 async function fetchWeeklyCounts({ month }) {
-    const url = new URL(`${API_BASE}/behavior-log/monthly-type-counts`);
-    const mm = String(month).includes('-') ? String(month).split('-')[1] : String(month);
-    url.searchParams.set('month', String(Number(mm))); // '08' -> 8
-    const res = await fetch(url.toString());
-    if (!res.ok) throw new Error('주차별 집계 조회 실패');
-    return res.json();
-  }
+  const url = new URL(`${API_BASE}/behavior-log/monthly-type-counts`);
+  const mm = String(month).includes('-') ? String(month).split('-')[1] : String(month);
+  url.searchParams.set('month', String(Number(mm))); // '08' -> 8
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('주차별 집계 조회 실패');
+  return res.json();
+}
 
-  export default function WeeklyStackedLogByMonth() {
-    const theme = useTheme();
-    const TYPE_COLORS = {
-      logon:  '#2196f3',
-      email:  '#4caf50',
-      http:   '#f44336',
-      device: '#ff9800',
-      file:   '#9c27b0',
-    };
-    
-    const [months, setMonths] = useState([]);
-    const [month, setMonth] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [optLoading, setOptLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [labels, setLabels] = useState([]);
-    const [series, setSeries] = useState({});     
+export default function WeeklyStackedLogByMonth() {
+  const theme = useTheme();
+  const TYPE_COLORS = {
+    logon: '#2196f3',
+    email: '#4caf50',
+    http: '#f44336',
+    device: '#ff9800',
+    file: '#9c27b0',
+  };
+
+  const [months, setMonths] = useState([]);
+  const [month, setMonth] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [optLoading, setOptLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [labels, setLabels] = useState([]);
+  const [series, setSeries] = useState({});
 
   useEffect(() => {
     let mounted = true;
@@ -59,7 +59,7 @@ async function fetchWeeklyCounts({ month }) {
         if (!mounted) return;
         setMonths(ms);
         if (ms.length) {
-            setMonth(ms[ms.length - 1]); // 최신 달 자동 선택
+          setMonth(ms[ms.length - 1]); // 최신 달 자동 선택
         }
       } catch (e) {
         setError(e?.message || '월 옵션 조회 오류');
@@ -96,7 +96,7 @@ async function fetchWeeklyCounts({ month }) {
     const max = allVals.length ? Math.max(...allVals) : 0;
     if (max === 0) return undefined;
     const pow10 = Math.pow(10, Math.max(0, String(Math.floor(max)).length - 1));
-    const step = pow10 / 2; 
+    const step = pow10 / 2;
     return Math.ceil((max * 1.15) / step) * step;
   }, [series]);
 
@@ -165,7 +165,7 @@ async function fetchWeeklyCounts({ month }) {
                 '& .MuiOutlinedInput-input': { color: '#000 !important' },
                 '& .MuiInputBase-input': { color: '#000 !important' },
                 '.MuiSelect-icon': { color: '#000' },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#fff'},
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#fff' },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fff' },
                 '&.Mui-focused.MuiOutlinedInput-root': {
                   outline: 'none',

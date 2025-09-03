@@ -3,11 +3,12 @@ import { Box, Table, TableBody, TableCell, TableHead, TableRow, CircularProgress
 import CommonCard from '../../../components/common/card/CommonCard';
 import { fetchAnomalyEmployees } from '../../../services/AnomalyDetection';
 import { useParams } from 'react-router-dom';
-
+import { useTheme } from '@emotion/react';
 const AnomalyEmployeeList = () => {
   const { oid } = useParams();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -24,7 +25,7 @@ const AnomalyEmployeeList = () => {
   }, [oid]);
 
   return (
-    <CommonCard title="이상 사용자 목록">
+    <>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height={150}>
           <CircularProgress />
@@ -41,15 +42,16 @@ const AnomalyEmployeeList = () => {
             <TableBody>
               {employees.map((employee) => (
                 <TableRow key={employee.employee_id}>
-                  <TableCell>{employee.employee_id}</TableCell>
-                  <TableCell>{employee.employee_name}</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.black }}>{employee.employee_id}</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.black }}>{employee.employee_name}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Box>
       )}
-    </CommonCard>
+    </>
+
   );
 };
 

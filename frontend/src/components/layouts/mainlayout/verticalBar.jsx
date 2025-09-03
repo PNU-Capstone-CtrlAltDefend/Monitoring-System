@@ -72,7 +72,7 @@ const VerticalNavbar = ({ isExpanded }) => {
                     selected={isActive('anomaly')}
                     sx={listItemStyle}
                 >
-                    <ListItemText primary="악성 사용자 탐지" />
+                    <ListItemText primary="이상 사용자 탐지" />
                 </ListItemButton>
                 <ListItemButton
                     onClick={() => handleListItemClick('behavior-logs')}

@@ -27,3 +27,16 @@ export async function get_anomaly_count_by_week(organization_id){
         throw error;
     }   
 }
+export async function fetchNetworkBlockingLogs(organization_id) {
+    try {
+        const response = await fetch(`${API_URL}/network_access_control/${organization_id}/blocking-network-histories`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching network blocking logs:', error);
+        throw error;
+    }
+}
