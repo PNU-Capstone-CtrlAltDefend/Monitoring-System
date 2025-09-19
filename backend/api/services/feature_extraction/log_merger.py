@@ -50,7 +50,7 @@ class LogMerger:
             return pd.DataFrame([self._sa_obj_to_dict(log) for log in behavior_log_crud.get_logon_logs_by_event_ids(self.db, event_ids)])
         elif event_type == "http":
             return pd.DataFrame([self._sa_obj_to_dict(log) for log in behavior_log_crud.get_http_logs_by_event_ids(self.db, event_ids)])
-        elif event_type == "email":
+        elif event_type == "email": 
             return pd.DataFrame([self._sa_obj_to_dict(log) for log in behavior_log_crud.get_email_logs_by_event_ids(self.db, event_ids)])
         elif event_type == "device":
             return pd.DataFrame([self._sa_obj_to_dict(log) for log in behavior_log_crud.get_device_logs_by_event_ids(self.db, event_ids)])

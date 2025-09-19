@@ -2,6 +2,7 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import desc
 from datetime import datetime
 from model.behavior_log.models import Behavior_logs, Http_logs, Email_logs, Device_logs, Logon_logs, File_logs
 from model.behavior_log.schemas import BehaviorLogCreate, HttpLogCreate, EmailLogCreate, DeviceLogCreate, LogonLogCreate, FileLogCreate
@@ -55,7 +56,7 @@ def get_behavior_logs_by_event_id(db: Session, event_id: str) -> List[Behavior_l
     return db.query(Behavior_logs).filter(Behavior_logs.event_id == event_id).all()
 
 def get_behavior_logs_by_employee_id(db: Session, employee_id: str) -> List[Behavior_logs]:
-    return db.query(Behavior_logs).filter(Behavior_logs.employee_id == employee_id).all()
+    return db.query(Behavior_logs).filter(Behavior_logs.employee_id == employee_id).order_by(desc(Behavior_logs.timestamp)).all()
 
 def get_behavior_logs_by_event_type(db: Session, event_type: str) -> List[Behavior_logs]:
     return db.query(Behavior_logs).filter(Behavior_logs.event_type == event_type).all()

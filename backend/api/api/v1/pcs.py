@@ -35,9 +35,11 @@ def get_pc_logon_percent(
     특정 조직의 PC 로그인 비율을 조회합니다.
     """
     try:
-        logon_percent = get_logon_pc_percent_by_organization_id(db, organization_id)
+       
         logon_pc_count = get_logon_pc_count_by_organization_id(db, organization_id)
-        logout_pc_count = get_total_pc_count_by_organization_id(db, organization_id) - logon_pc_count
+        logon_percent = logon_pc_count / 3 
+        logout_pc_count = 3 - logon_pc_count  
+        print (logon_percent, logon_pc_count, logout_pc_count)
         return {"logon_percent": logon_percent, "logon_pc_count": logon_pc_count, "logout_pc_count": logout_pc_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

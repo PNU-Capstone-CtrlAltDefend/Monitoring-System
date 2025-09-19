@@ -31,7 +31,7 @@ app = FastAPI(
 )
 
 # CORS
-origins = ["http://localhost:3000", "http://localhost:3001"]
+origins = ["http://localhost:3000", "http://localhost:3001", "http://172.23.164.185:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
