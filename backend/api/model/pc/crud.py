@@ -92,10 +92,16 @@ def get_pcs_status_by_organization_id(db: Session, organization_id: uuid.UUID) -
         else_=0
     )
 
+    # ip_address가 'test'가 아닌 경우를 우선
+    has_valid_ip = case(
+        (Pcs.ip_address != '-', 1),
+        else_=0
+    )
+
     pcs_list = (
         db.query(Pcs)
           .filter(Pcs.organization_id == organization_id)
-          .order_by(desc(is_active), Pcs.pc_id.asc())  # 로그인 PC 우선
+          .order_by(desc(is_active), desc(has_valid_ip), Pcs.pc_id.asc())
           .all()
     )
 
