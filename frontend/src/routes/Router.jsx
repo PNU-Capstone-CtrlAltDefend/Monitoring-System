@@ -1,29 +1,63 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, createBrowserRouter } from 'react-router-dom';
-import Home from '../pages/home.jsx'; // Home 컴포넌트가 있는 파일
+import { createBrowserRouter } from 'react-router-dom';
 
-import MainLayout from '../layouts/MainLayout.jsx'; // 메인 레이아웃 컴포넌트
+import MainLayout from '../components/layouts/mainlayout/MainLayout.jsx';
+import Home from '../pages/home.jsx';
 import SignUp from '../pages/signup.jsx';
-import SignIn from '../pages/signin.jsx'; // 로그인 컴포넌트  
+import SignIn from '../pages/signin/signin.jsx';
+import ProtectedRoute from './ProtectedRoute.jsx';
+import Dashboard from '../pages/dashboard/dashboard.jsx';
+import BehaviorLogs from '../pages/behavior-logs/behavior-logs.jsx'
+import Topology from '../pages/topology/topology.jsx';
+import Anomaly from '../pages/anomaly/Anomaly.jsx';
+import PCs from '../pages/pc_status/PCs.jsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
     children: [
-            {
-              index: true,
-              element: <Home/>,
-            },
-            {
-              path: 'signup',
-              element: <SignUp/>,
-            },
-            {
-              path: 'signin',
-              element: <SignIn/>
-            },
+      {
+        index: true,
+        element: <Home />
+      },
+      {
+        path: 'signin',
+        element: <SignIn />
+      },
+      {
+        path: 'signup',
+        element: <SignUp />
+      },
+
+      {
+        path: ':oid',
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: 'dashboard',
+            element: <Dashboard />
+          },
+          {
+            path: 'behavior-logs',
+            element: <BehaviorLogs />
+          },
+          {
+            path: 'topology',
+            element: <Topology />
+          },
+          {
+            path: 'anomaly',
+            element: <Anomaly />
+          },
+          {
+            path: 'PCs',
+            element: <PCs />
+          }
+        ]
+      }
     ]
-  }  
-])
-export default router;  
+  }
+]);
+
+export default router;

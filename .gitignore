@@ -29,3 +29,44 @@ pgadmin/
 
 #db data 
 backend/db/data/
+*.pkl
+*.gz
+numeric_data.pkl
+db_data.tar.gz
+
+# csv 
+*.csv
+*.Identifier
+
+# model data
+*.joblib
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+
+# Environment
+.env
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/.cache/
+*.eslintcache
+*.pack
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache / IDE
+*.swp
+.vscode/
+.idea/
+
+#data set
+datasetbackend/api/services/feature_extraction/*.pkl
+
+# venv
+backend/api/venv/

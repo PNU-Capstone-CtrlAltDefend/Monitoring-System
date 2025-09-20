@@ -83,6 +83,7 @@ const theme = createTheme({
       main: '#0f0f0f',       // 거의 블랙에 가까운 딥그레이
       light: '#1a1a1a',
       dark: '#000000',
+      white: '#ffffff',
     },
     secondary: {
       main: '#3b3b3b',       // 어두운 회색 포인트
@@ -92,11 +93,13 @@ const theme = createTheme({
     background: {
       default: '#121212',    // 전체 배경
       paper: '#1e1e1e',      // 카드, 박스 등
+      white: '#ffffff', // 흰색 배경 (필요시 사용)
     },
     text: {
       primary: '#e4e4e7',    // 밝은 회색 글자
       secondary: '#a1a1aa',  // 중간 회색
       disabled: '#52525b',   // 흐릿한 회색
+      black: '#000000',      // 검정색 글자
     },
     divider: '#2e2e2e',       // 테두리/구분선
     error: {
@@ -130,6 +133,9 @@ const theme = createTheme({
     fontWeightRegular: 400,
     fontWeightMedium: 500,
     fontWeightBold: 700,
+  },
+  shape: {
+    borderRadius: 1,
   },
   components: {
     MuiTableCell: {
